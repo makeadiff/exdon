@@ -30,6 +30,7 @@ $donation_id = $sql->insert("external_donations", array(
 		'donation_type'	=> $donation_type,
 		'donor_id'		=> $donor_id,
 		'fundraiser_id'	=> $fundraiser_id,
+		'amount'		=> $amount,
 		'created_at'	=> $created_at,
 		'updated_at'	=> 'NOW()',
 		'donation_status'	=> 'TO_BE_APPROVED_BY_POC',

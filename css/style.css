@@ -1,0 +1,14 @@
+#header {
+	height: 120px;
+}
+#content {
+	margin-top: 120px;
+}
+
+
+#select-date-area {
+	display: none;
+}
+#select-date-toggle {
+	margin-left: 100px;
+}
