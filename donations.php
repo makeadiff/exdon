@@ -30,6 +30,7 @@ $crud = new Crud("external_donations");
 $crud->title = "External Donations";
 $crud->allow['add'] = false;
 $crud->allow['edit'] = false;
+$crud->allow['sorting'] = false;
 
 $html = new HTML;
 $html->options['output'] = 'return';
@@ -42,8 +43,8 @@ $all_donation_types = array(
 		'any'			=> 'Any'
 	);
 $all_donation_status = array(
-		'TO_BE_APPROVED_BY_POC'	=> 'Not Approved',
-		'DEPOSIT COMPLETE'		=> 'Approved',
+		'TO_BE_APPROVED_BY_POC'	=> 'Not Deposited',
+		'DEPOSIT COMPLETE'		=> 'Deposited',
 		'any'					=> 'Any'
 	);
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
@@ -72,8 +73,8 @@ $crud->addField("donation_type", 'Type', 'enum', array(), $all_donation_types, '
 $crud->addListDataField("donor_id", "donours", "Donor", "", array('fields' => 'id,first_name'));
 $crud->addListDataField("fundraiser_id", "users", "Fundraiser", "", array('fields' => 'id,CONCAT(first_name, " ", last_name) AS name'));
 $crud->addListingField('Status', array('html'=>'($row["donation_status"] == "DEPOSIT COMPLETE")'
- 	. ' ? "<span class=\"with-icon success\">Approved - <a href=\'?status_action=disapprove&select_row[]=$row[id]\'>Undo Approval?</a></span>"'
- 	. ' : "<span class=\"with-icon error\">Not Approved Yet - <a href=\'?status_action=approve&select_row[]=$row[id]\'>Approve?</a></span>"'));
+ 	. ' ? "<span class=\"with-icon success\">Deposited - <a href=\'?status_action=disapprove&select_row[]=$row[id]\'>Undo Approval?</a></span>"'
+ 	. ' : "<span class=\"with-icon error\">Not Deposited Yet - <a href=\'?status_action=approve&select_row[]=$row[id]\'>Approve?</a></span>"'));
 
 // Show only the listing 
 $crud->setListingFields("donation_type", "amount", "donor_id", "fundraiser_id", "created_at", 'status');

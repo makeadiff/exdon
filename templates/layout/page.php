@@ -27,8 +27,7 @@
 <div id="content" class="container">
 
 <?php 
-//include($GLOBALS['template']->template);
-$crud->printAction();
+include($GLOBALS['template']->template);
 ?>
 
 </div>
