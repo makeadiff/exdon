@@ -7,7 +7,6 @@ $city_id = i($QUERY,'city_id', 44);
 $donation_status = i($QUERY,'donation_status', 'any');
 
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
-//$all_cities[0] = 'Any';
 
 $all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name FROM users U 
 		INNER JOIN user_role_maps UR ON UR.user_id=U.id

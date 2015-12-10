@@ -56,6 +56,21 @@ function siteInit() {
 		}
 	});
 
+		// Show selected city's centers. 
+	$("#city_id").change(function() {
+		var select = "<select id='coach_id'>";
+		var city_id = this.value;
+
+		var coaches_in_city = coaches[city_id];
+		for(var coach_id in coaches_in_city) {
+			select += "<option value='"+coach_id+"'>"+coaches_in_city[coach_id]+"</option>";
+		}
+		select += '</select>';
+
+		$("#coach_id").html(select);
+	});
+
+
 	if(window.init && typeof window.init == "function") init(); //If there is a function called init(), call it on load
 }
 $ = jQuery.noConflict();
