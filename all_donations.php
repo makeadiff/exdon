@@ -112,12 +112,10 @@ $all_cities[0] = 'Any';
 // Filtering code - goes on the top.
 $crud->code['before_content'] = '<form action="" method="get" class="form-area">'
 	. $html->buildInput("city_id", 'City', 'select', $city_id, array('options' => $all_cities))
-	. '<div id="select-date-area">'
 	. $html->buildInput("donation_type", 'Type', 'select', $donation_type, array('options' => $all_donation_types))
 	. $html->buildInput("donation_status", 'Status', 'select', $donation_status, array('options' => $all_donation_status))
 	. $html->buildInput('from', 'From', 'text', $from, array('class' => 'date-picker'))
 	. $html->buildInput('to', 'To', 'text', $to, array('class' => 'date-picker'))
-	. '</div><a href="#" id="select-date-toggle">More Options</a><br />'
 	. $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn btn-primary'))
 	. '</form><br /><br />';
 $html->options['output'] = 'print';
