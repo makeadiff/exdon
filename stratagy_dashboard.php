@@ -13,6 +13,14 @@ $all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS 
 		INNER JOIN user_role_maps UR ON UR.user_id=U.id
 		WHERE UR.role_id=9 AND U.is_deleted=0 AND U.city_id=$city_id");
 
+$couch_volunteers_count = $sql->getById("SELECT R.manager_id, COUNT(U.id) 
+	FROM users U
+	INNER JOIN reports_tos R ON R.user_id=U.id
+	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)) . ")
+	GROUP BY R.manager_id");
+$total_volunteers = array_sum(array_values($couch_volunteers_count));
+
+
 $all_donations = array();
 $external = array();
 $donut = array();
@@ -77,18 +85,11 @@ foreach ($all_donations as $i => $don) {
 $total_donation_count = count($all_donations);
 if($total_donation_count) {
 	foreach($donations as $index => $value) {
-		$donations[$index]['100_percent'] = round($donations[$index]['100'] / $total_donation_count * 100, 2);
-		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $total_donation_count * 100, 2);
-		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $total_donation_count * 100, 2);
+		$donations[$index]['100_percent'] = round($donations[$index]['100'] / $total_volunteers * 100, 2);
+		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $total_volunteers * 100, 2);
+		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $total_volunteers * 100, 2);
 	}
 }
 
-
-$couch_volunteers_count = $sql->getById("SELECT R.manager_id, COUNT(U.id) 
-	FROM users U
-	INNER JOIN reports_tos R ON R.user_id=U.id
-	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)) . ")
-	GROUP BY R.manager_id");
-$total_volunteers = array_sum(array_values($couch_volunteers_count));
 
 render();
