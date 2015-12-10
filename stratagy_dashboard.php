@@ -21,17 +21,20 @@ $donation_status_check = '';
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='RECEIPT SENT'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'";
-$external = $sql->getAll("SELECT D.id,amount AS donation_amount, donation_status, donor_id, fundraiser_id, donation_status, D.created_at,'external' AS source, R.manager_id
-		FROM external_donations D
+$donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount, R.manager_id 
+		FROM donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
-		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check");
+		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check
+		GROUP BY D.fundraiser_id");
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='DEPOSIT COMPLETE'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='DEPOSIT COMPLETE'";
-$donut = $sql->getAll("SELECT D.id,donation_amount, 'donut' AS donation_status, donour_id AS donor_id, fundraiser_id, donation_status,  D.created_at, 'donut' AS source, R.manager_id
-	FROM donations D
-	INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
-	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check");
+$external = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donation_amount, R.manager_id 
+		FROM external_donations D 
+		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
+		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check
+		GROUP BY D.fundraiser_id");
+
 
 $all_donations = array_merge($external, $donut);
 $amount_template = array(
@@ -86,6 +89,6 @@ $couch_volunteers_count = $sql->getById("SELECT R.manager_id, COUNT(U.id)
 	INNER JOIN reports_tos R ON R.user_id=U.id
 	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)) . ")
 	GROUP BY R.manager_id");
-$total_volunteers = $sql->getOne("SELECT COUNT(id) FROM users WHERE city_id=$city_id AND is_deleted=0");
+$total_volunteers = array_sum(array_values($couch_volunteers_count));
 
 render();
