@@ -13,7 +13,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 var coaches = <?php echo json_encode($coaches); ?>;
 </script>
 
-<table class="table table-stripped">
+<table class="table table-striped">
 <tr><th>Type</th><th>Amount</th><th>Deposited</th><th>3 Week Late</th><th>Donor</th><th>Fundraiser</th><th>Status</th></tr>
 <tr>
 	<td>Total</td>
