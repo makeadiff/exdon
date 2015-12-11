@@ -4,16 +4,12 @@ require('common.php');
 // Argument Parsing.
 $city_id = i($QUERY,'city_id', 44);
 $coach_id = i($QUERY,'coach_id', 0);
-$from = i($QUERY,'from', '2015-06-01');
-$to = i($QUERY,'to', date('Y-m-d'));
 $donation_status = i($QUERY,'donation_status', 'any');
 $donation_type = i($QUERY,'donation_type', 'any');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
 if($city_id) $checks[] 	= "U.city_id=$city_id";
-if($from) $checks[] 	= "D.created_at > '$from 00:00:00'";
-if($to) $checks[] 		= "D.created_at < '$to 23:59:59'";
 if($coach_id) $checks[]	= "R.manager_id = $coach_id";
 if($donation_status != 'any')	{
 	if($donation_status == 'DEPOSIT COMPLETE')
@@ -22,6 +18,13 @@ if($donation_status != 'any')	{
 		$checks[] = "(D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT')";
 }
 if($donation_type != 'any' and $donation_type != 'donut')		$checks[] = "D.donation_type = '$donation_type'";
+
+include("../donutleaderboard/_city_filter.php");
+$filter_array = array();
+foreach ($city_date_filter as $this_city_id => $dates) {
+	$filter_array[] = "(U.city_id=$this_city_id AND D.created_at >= '$dates[from] 00:00:00')";
+}
+$checks[] = "(" . implode(" OR ", $filter_array) . ")";
 
 
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
