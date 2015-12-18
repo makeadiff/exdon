@@ -6,6 +6,8 @@ $html = new HTML;
 $coach_id = i($QUERY,'coach_id', 0);
 $donation_status = i($QUERY,'donation_status', 'any');
 
+$coach_name = $sql->getOne("SELECT CONCAT(first_name, last_name) AS name FROM users WHERE id=$coach_id");
+
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 
 $all_volunteers = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name FROM users U 

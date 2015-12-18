@@ -1,3 +1,5 @@
+<h3>Donations raised by people coached by <?php echo $coach_name ?></h3>
+
 <table class="table table-striped">
 <tr><th>&nbsp;</th><th>Volunter</th><th colspan="2" class="amounts">100+</th><th colspan="2" class="amounts">12000+</th><th colspan="2" class="amounts">100000+</th></tr>
 <tr><th></th><th></th><th>Count</th><th>Total Amount</th><th>Count</th><th>Total Amount</th><th>Count</th><th>Total Amount</th></tr>

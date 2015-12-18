@@ -1,4 +1,4 @@
-<h1>Donations from <?php echo $fundraiser_name ?></h1>
+<h3>Donations raised by <?php echo $fundraiser_name ?></h3>
 
 <table class="table table-striped">
 <tr><th>&nbsp;</th><th>Donor</th><th>Donuted Amount</th><th>Deposited</th><th>Late</th></tr>
