@@ -32,7 +32,8 @@ $all_cities[0] = 'Any';
 
 $all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name, U.city_id FROM users U 
 		INNER JOIN user_role_maps UR ON UR.user_id=U.id
-		WHERE UR.role_id=9 AND U.is_deleted=0");
+		WHERE UR.role_id=9 AND U.is_deleted=0
+		ORDER BY name");
 $coaches = array();
 foreach ($all_coaches as $this_coach_id => $coach_data) {
 	if(!isset($coaches[$coach_data['city_id']])) $coaches[$coach_data['city_id']] = array('Any');

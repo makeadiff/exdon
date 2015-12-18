@@ -24,7 +24,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 </tr>
 <?php foreach ($all_coaches as $coach_id => $coach_name) { ?>
 	<tr>
-		<td><?php echo $coach_name ?></td>
+		<td><a href="coach_dashboard.php?coach_id=<?php echo $coach_id ?>&amp;donation_status=<?php echo $donation_status ?>"><?php echo $coach_name ?></a></td>
 		<td><?php echo $couch_volunteers_count[$coach_id] ?></td>
 		<td><?php echo $donations[$coach_id]['100'] ?></td>
 		<td><?php echo $donations[$coach_id]['100_percent'] ?>%</td>
