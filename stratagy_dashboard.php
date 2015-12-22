@@ -1,6 +1,6 @@
 <?php
 require 'common.php';
-
+require '../donutleaderboard/_city_filter.php';
 $html = new HTML;
 
 $city_id = i($QUERY,'city_id', 44);
@@ -31,7 +31,8 @@ if($donation_status == 'not_deposited') $donation_status_check = " AND D.donatio
 $donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount, R.manager_id 
 		FROM donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
-		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check AND $city_checks
 		GROUP BY D.fundraiser_id");
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='DEPOSIT COMPLETE'";
@@ -39,7 +40,8 @@ if($donation_status == 'not_deposited') $donation_status_check = " AND D.donatio
 $external = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donation_amount, R.manager_id 
 		FROM external_donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
-		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check AND $city_checks
 		GROUP BY D.fundraiser_id");
 
 

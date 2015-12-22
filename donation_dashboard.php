@@ -1,5 +1,6 @@
 <?php
 require 'common.php';
+require '../donutleaderboard/_city_filter.php';
 
 $html = new HTML;
 
@@ -19,7 +20,8 @@ if($donation_status == 'not_deposited') $donation_status_check = " AND D.donatio
 $donut = $sql->getAll("SELECT D.id, donation_amount AS amount, CONCAT(DON.first_name, ' ', DON.last_name) AS donor, D.created_at, D.donation_status
 		FROM donations D 
 		INNER JOIN donours DON ON DON.id=D.donour_id
-		WHERE D.fundraiser_id = $fundraiser_id $donation_status_check");
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE D.fundraiser_id = $fundraiser_id $donation_status_check AND $city_checks");
 
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='DEPOSIT COMPLETE'";
@@ -27,7 +29,8 @@ if($donation_status == 'not_deposited') $donation_status_check = " AND D.donatio
 $external = $sql->getAll("SELECT D.id, D.amount, CONCAT(DON.first_name, ' ', DON.last_name) AS donor, D.created_at, D.donation_status
 		FROM external_donations D 
 		INNER JOIN donours DON ON DON.id=D.donor_id
-		WHERE D.fundraiser_id = $fundraiser_id $donation_status_check");
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE D.fundraiser_id = $fundraiser_id $donation_status_check AND $city_checks");
 
 $all_donations = array_merge($external, $donut);
 

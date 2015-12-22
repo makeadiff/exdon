@@ -1,5 +1,6 @@
 <?php
 require 'common.php';
+require '../donutleaderboard/_city_filter.php';
 
 $html = new HTML;
 
@@ -24,14 +25,16 @@ if($donation_status == 'deposited') $donation_status_check = " AND D.donation_st
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'";
 $donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount
 		FROM donations D 
-		WHERE D.fundraiser_id IN (". implode(",", array_keys($all_volunteers)).") $donation_status_check
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE D.fundraiser_id IN (". implode(",", array_keys($all_volunteers)).") $donation_status_check AND $city_checks
 		GROUP BY D.fundraiser_id");
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='DEPOSIT COMPLETE'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='DEPOSIT COMPLETE'";
 $external = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donation_amount
 		FROM external_donations D 
-		WHERE D.fundraiser_id IN (". implode(",", array_keys($all_volunteers)).") $donation_status_check
+		INNER JOIN users ON users.id=D.fundraiser_id
+		WHERE D.fundraiser_id IN (". implode(",", array_keys($all_volunteers)).") $donation_status_check AND $city_checks
 		GROUP BY D.fundraiser_id");
 
 
