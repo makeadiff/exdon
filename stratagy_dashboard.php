@@ -25,7 +25,8 @@ $external = array();
 $donut = array();
 
 $donation_status_check = '';
-if($city_checks) $city_checks = ' AND ' . $city_checks;
+if(isset($city_checks)) $city_checks = ' AND ' . $city_checks;
+else $city_checks = '';
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='RECEIPT SENT'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'";
