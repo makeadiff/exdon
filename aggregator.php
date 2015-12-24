@@ -89,16 +89,6 @@ foreach ($all_donations as $i => $don) {
 	$total_amount += $don['donation_amount'];
 }
 
-
-// $crud = new Crud("external_donations");
-// $crud->title = "All Donations";
-// $crud->allow['add'] = false;
-// $crud->allow['searching'] = false;
-// $crud->allow['bulk_operations'] = false;
-// $crud->allow['edit'] = false;
-// $crud->allow['delete'] = false;
-// $crud->allow['sorting'] = false;
-
 $all_donation_types = array(
 		'donut'			=> 'Donut',
 		'ecs' 			=> 'ECS',
@@ -113,15 +103,10 @@ $all_donation_status = array(
 		'any'					=> 'Any'
 	);
 
-// $crud->addField("donation_type", 'Type', 'enum', array(), $all_donation_types, 'select');
-// $crud->addListDataField("donor_id", "donours", "Donor", "", array('fields' => 'id,first_name'));
-// $crud->addListDataField("fundraiser_id", "users", "Fundraiser", "", array('fields' => 'id,CONCAT(first_name, " ", last_name) AS name'));
-
 $html = new HTML;
 
 // The other includes
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/ui/minified/jquery-ui.min.js'), 'js', true);
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/themes/base/minified/jquery-ui.min.css'), 'css', true);
-
 
 render();
