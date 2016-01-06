@@ -12,3 +12,6 @@
 #select-date-toggle {
 	margin-left: 100px;
 }
+.line {
+	border-right: 1px solid #000;
+}
