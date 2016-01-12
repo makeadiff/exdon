@@ -10,6 +10,8 @@ $amount 		= param('amount');
 $created_at 	= date("Y-m-d", strtotime(param('created_at')));
 $donation_type	= param('donation_type');
 
+if($donation_type == 'gg') $donation_type = 'globalgiving';
+
 // Find the donor - both email and phone must be same
 $sql->options['error_handling'] = 'die';
 $donor_id = $sql->getOne("SELECT id FROM donours WHERE email_id='$donor_email' AND phone_no='$donor_phone'");

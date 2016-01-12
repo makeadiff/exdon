@@ -11,9 +11,9 @@ $coach_name = $sql->getOne("SELECT CONCAT(first_name, last_name) AS name FROM us
 
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 
-$all_volunteers = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name FROM users U 
-		INNER JOIN reports_tos RT ON RT.user_id=U.id
-		WHERE U.is_deleted=0 AND RT.manager_id=$coach_id");
+$all_volunteers = $sql->getById("SELECT users.id, CONCAT(users.first_name, users.last_name) AS name FROM users 
+		INNER JOIN reports_tos RT ON RT.user_id=users.id
+		WHERE users.is_deleted=0 AND RT.manager_id=$coach_id AND  $exclude_people");
 
 $all_donations = array();
 $external = array();

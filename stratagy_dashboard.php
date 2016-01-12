@@ -15,7 +15,7 @@ $all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS 
 $couch_volunteers_count = $sql->getById("SELECT R.manager_id, COUNT(U.id) 
 	FROM users U
 	INNER JOIN reports_tos R ON R.user_id=U.id
-	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)) . ")
+	WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)) . ") 
 	GROUP BY R.manager_id");
 $total_volunteers = array_sum(array_values($couch_volunteers_count));
 
