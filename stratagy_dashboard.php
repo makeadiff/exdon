@@ -29,7 +29,7 @@ if(isset($city_checks)) $city_checks = ' AND ' . $city_checks;
 else $city_checks = '';
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='RECEIPT SENT'";
-if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'";
+if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'"; // TO BE APPROVED BY POC and HAND OVER TO FC PENDING is not deposited. Rest all is deposited
 $donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount, R.manager_id 
 		FROM donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
