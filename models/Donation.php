@@ -1,5 +1,6 @@
 <?php
 class Donation extends DBTable {
+	public $error;
 
 	function __construct() {
 	   parent::__construct('donations');
@@ -95,11 +96,13 @@ class Donation extends DBTable {
 
 		$user = new User($poc_id);
 
-		if(!$user->hasRole($user->role_ids['CFR POC'])) $this->_error("User '{$user->user['name']}' is not a POC. Only POCs have approval option.");
+		if(!$user->hasRole($user->role_ids['CFR POC'])) return $this->_error("User '{$user->user['name']}' is not a POC. Only POCs have approval option.");
 
 		$volunteers = $user->getSubordinates();
 
-		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, 
+		if(!$volunteers) return $this->_error("This user don't have any volunteers under them.");
+
+		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
 				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name
 			FROM donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
@@ -124,6 +127,7 @@ class Donation extends DBTable {
 
 
 	function _error($message) {
-		die($message);
+		$this->error = $message;
+		return false;
 	}
 }

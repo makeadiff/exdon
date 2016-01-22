@@ -2,6 +2,8 @@
 require 'common.php';
 require '../includes/classes/API.php';
 
+header("Access-Control-Allow-Origin: *");
+
 $sql->options['error_handling'] = 'die';
 $api = new API;
 
@@ -22,10 +24,13 @@ $api->get('/donation/get_donations_for_approval/{poc_id}', function ($poc_id) {
 	$donation = new Donation;
 	$donations_for_approval = $donation->getDonationsForApproval($poc_id);
 
-	if(count($donations_for_approval))
+	if($donations_for_approval)
 		showSuccess(count($donations_for_approval) . " donation(s) waiting for approval", array('donations' => $donations_for_approval));
-	else
-		showError("Can't find any donations that need approval for this user");
+	else {
+		$error = $donation->error;
+		if(!$error) $error = "Can't find any donations that need approval for this user";
+		showError($error);
+	}
 });
 
 $api->get('/donation/{donation_id}/approve/{poc_id}', function ($donation_id, $poc_id) {
@@ -38,7 +43,10 @@ $api->get('/donation/{donation_id}/approve/{poc_id}', function ($donation_id, $p
 $api->any("/user/login", function () {
 	global $QUERY;
 	$user = new User;
-	if(!$user->login($QUERY['phone'], $QUERY['password'])) {
+
+	$phone = i($QUERY, 'phone');
+	$password = i($QUERY, 'password');
+	if(!$user->login($phone, $password)) {
 		showError($user->error, array('')); exit;
 	}
 
