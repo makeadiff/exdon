@@ -27,7 +27,7 @@ if(i($QUERY, 'status_action') == 'approve') {
 
 // Initialize all necessany things. 
 $crud = new Crud("external_donations");
-$crud->title = "External Donations";
+$page_title = $crud->title = "External Donations Approval";
 $crud->allow['add'] = false;
 $crud->allow['edit'] = false;
 $crud->allow['sorting'] = false;
@@ -37,7 +37,7 @@ $html->options['output'] = 'return';
 
 $all_donation_types = array(
 		'ecs' 			=> 'ECS',
-		'global_giving'	=> 'Global Giving',
+		'globalgiving'	=> 'Global Giving',
 		'online'		=> 'Online',
 		'other'			=> "Other",
 		'any'			=> 'Any'
