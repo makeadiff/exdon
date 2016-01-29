@@ -27,13 +27,11 @@ if(i($QUERY, 'status_action') == 'approve') {
 
 // Initialize all necessany things. 
 $crud = new Crud("external_donations");
-$page_title = $crud->title = "External Donations Approval";
+$page_title = "External Donations Approval";
+$crud->title = "External Donation";
 $crud->allow['add'] = false;
-$crud->allow['edit'] = false;
+// $crud->allow['edit'] = false;
 $crud->allow['sorting'] = false;
-
-$html = new HTML;
-$html->options['output'] = 'return';
 
 $all_donation_types = array(
 		'ecs' 			=> 'ECS',
@@ -51,6 +49,9 @@ $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 $all_cities[0] = 'Any';
 
 // Filtering code - goes on the top.
+
+$html = new HTML;
+$html->options['output'] = 'return';
 $crud->code['before_content'] = '<form action="" method="post" class="form-area">'
 	. $html->buildInput("city_id", 'City', 'select', $city_id, array('options' => $all_cities))
 	. '<div id="select-date-area">'
@@ -66,12 +67,18 @@ $html->options['output'] = 'print';
 // The SQL for the listing 
 $crud->setListingQuery("SELECT D.* FROM external_donations D 
 	INNER JOIN users U ON U.id=D.fundraiser_id
-	WHERE " . implode(" AND ", $checks));
+	WHERE " . implode(" AND ", $checks) . " ORDER BY D.created_at DESC");
 
 // Fields customization.
 $crud->addField("donation_type", 'Type', 'enum', array(), $all_donation_types, 'select');
+$all_donation_status_without_any = $all_donation_status;
+unset($all_donation_status_without_any['any']);	
+$crud->addField("donation_status", 'Donation Status', 'enum', array(), $all_donation_status_without_any, 'select');
 $crud->addListDataField("donor_id", "donours", "Donor", "", array('fields' => 'id,first_name'));
+$crud->fields['donor_id']['extra_info']['readonly'] = true;
 $crud->addListDataField("fundraiser_id", "users", "Fundraiser", "", array('fields' => 'id,CONCAT(first_name, " ", last_name) AS name'));
+$crud->fields['fundraiser_id']['extra_info']['readonly'] = true;
+
 $crud->addListingField('Status', array('html'=>'($row["donation_status"] == "DEPOSIT COMPLETE")'
  	. ' ? "<span class=\"with-icon success\">Deposited - <a href=\'?status_action=disapprove&select_row[]=$row[id]\'>Undo Approval?</a></span>"'
  	. ' : "<span class=\"with-icon error\">Not Deposited Yet - <a href=\'?status_action=approve&select_row[]=$row[id]\'>Approve?</a></span>"'));
