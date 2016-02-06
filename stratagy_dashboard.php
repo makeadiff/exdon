@@ -8,8 +8,9 @@ $donation_status = i($QUERY,'donation_status', 'any');
 
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 
-$all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name FROM users U 
+$all_coaches = $sql->getById("SELECT U.id, CONCAT(U.first_name, U.last_name) AS name, COALESCE(groups.name,'-') as group_name FROM users U
 		INNER JOIN user_role_maps UR ON UR.user_id=U.id
+		LEFT OUTER JOIN groups ON groups.id = U.group_id
 		WHERE UR.role_id=9 AND U.is_deleted=0 AND U.city_id=$city_id");
 
 $couch_volunteers_count = $sql->getById("SELECT R.manager_id, COUNT(U.id) 

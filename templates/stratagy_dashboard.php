@@ -7,10 +7,11 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 </form><br /><br />
 
 <table class="table table-striped">
-<tr><th>Coach</th><th class="line">Volunter Count</th><th colspan="3" class="amounts line">100+</th><th colspan="3" class="amounts line">12000+</th><th colspan="3" class="amounts">100000+</th></tr>
+<tr><th>Group</th><th>Coach</th><th class="line">Volunter Count</th><th colspan="3" class="amounts line">100+</th><th colspan="3" class="amounts line">12000+</th><th colspan="3" class="amounts">100000+</th></tr>
 <tr><th></th><th class="line"></th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th>Total Amount</th></tr>
 <tr>
 	<td>All</td>
+	<td class="line">-</td>
 	<td class="line"><?php echo $total_volunteers ?></td>
 	<td><?php echo $donations['total']['100'] ?></td>
 	<td><?php echo $donations['total']['100_percent'] ?>%</td>
@@ -24,7 +25,8 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 </tr>
 <?php foreach ($all_coaches as $coach_id => $coach_name) { ?>
 	<tr>
-		<td><a href="coach_dashboard.php?coach_id=<?php echo $coach_id ?>&amp;donation_status=<?php echo $donation_status ?>"><?php echo $coach_name ?></a></td>
+		<td><?php echo $coach_name['group_name'] ?></td>
+		<td><a href="coach_dashboard.php?coach_id=<?php echo $coach_id ?>&amp;donation_status=<?php echo $donation_status ?>"><?php echo $coach_name['name'] ?></a></td>
 		<td class="line"><?php echo $couch_volunteers_count[$coach_id] ?></td>
 		<td><?php echo $donations[$coach_id]['100'] ?></td>
 		<td><?php echo $donations[$coach_id]['100_percent'] ?>%</td>
