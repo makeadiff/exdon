@@ -8,7 +8,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 
 <table class="table table-striped">
 <tr><th>Group</th><th>Coach</th><th class="line">Volunter Count</th><th colspan="3" class="amounts line">100+</th><th colspan="3" class="amounts line">12000+</th><th colspan="3" class="amounts">100000+</th></tr>
-<tr><th></th><th class="line"></th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th>Total Amount</th></tr>
+<tr><th></th><th></th><th class="line"></th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th class="line">Total Amount</th><th>Count</th><th>Percentage</th><th>Total Amount</th></tr>
 <tr>
 	<td>All</td>
 	<td class="line">-</td>
