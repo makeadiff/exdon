@@ -31,7 +31,7 @@ else $city_checks = '';
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='RECEIPT SENT'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'"; // TO BE APPROVED BY POC and HAND OVER TO FC PENDING is not deposited. Rest all is deposited
-$donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount, R.manager_id 
+$donut = $sql->getById("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS donation_amount, R.manager_id
 		FROM donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
 		INNER JOIN users ON users.id=D.fundraiser_id
@@ -40,15 +40,33 @@ $donut = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.donation_amount) AS d
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='DEPOSIT COMPLETE'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='DEPOSIT COMPLETE'";
-$external = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donation_amount, R.manager_id 
+$external = $sql->getById("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donation_amount, R.manager_id
 		FROM external_donations D 
 		INNER JOIN reports_tos R ON R.user_id=D.fundraiser_id
 		INNER JOIN users ON users.id=D.fundraiser_id
 		WHERE R.manager_id IN (". implode(",", array_keys($all_coaches)).") $donation_status_check $city_checks
 		GROUP BY D.fundraiser_id");
+$all_donations = array();
 
 
-$all_donations = array_merge($external, $donut);
+foreach ($donut as $fundraiser_id => $data) {
+
+	if (isset($external[$fundraiser_id])) {
+		$all_donations[$fundraiser_id]['donation_amount'] = $donut[$fundraiser_id]['donation_amount'] + $external[$fundraiser_id]['donation_amount'];
+		$all_donations[$fundraiser_id]['manager_id'] = $data['manager_id'];
+	} else {
+		$all_donations[$fundraiser_id] = $data;
+	}
+}
+
+foreach ($external as $fundraiser_id => $data) {
+
+	if (!isset($donut[$fundraiser_id])) {
+		$all_donations[$fundraiser_id] = $data;
+	}
+}
+
+
 $amount_template = array(
 		'donuted'			=>	0,
 		'donuted_amount'	=>	0,
@@ -106,8 +124,8 @@ if($total_donation_count) {
 	}
 
 	$donations['total']['donuted_percent'] = round($donations['total']['donuted'] / $total_volunteers * 100, 0);
-	$donations['total']['12K_percent'] = round($donations['total']['12K_percent'] / $total_volunteers * 100, 0);
-	$donations['total']['1L_percent'] = round($donations['total']['1L_percent'] / $total_volunteers * 100, 0);
+	$donations['total']['12K_percent'] = round($donations['total']['12K'] / $total_volunteers * 100, 0);
+	$donations['total']['1L_percent'] = round($donations['total']['1L'] / $total_volunteers * 100, 0);
 }
 
 
