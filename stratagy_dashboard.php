@@ -50,15 +50,16 @@ $external = $sql->getAll("SELECT D.fundraiser_id AS id, SUM(D.amount) AS donatio
 
 $all_donations = array_merge($external, $donut);
 $amount_template = array(
-		'100'			=>	0,
-		'100_amount'	=>	0,
-		'100_percent'	=>	0,
+		'donuted'			=>	0,
+		'donuted_amount'	=>	0,
+		'donuted_percent'	=>	0,
 		'12K'			=>	0,
 		'12K_amount'	=>	0,
 		'12K_percent'	=>	0,
 		'1L'			=>	0,
 		'1L_amount'		=>	0,
 		'1L_percent'	=>	0,
+		'total'			=>	0,
 	);
 $donations = array('total'	=> $amount_template);
 foreach ($all_coaches as $coach_id => $name) {
@@ -66,32 +67,61 @@ foreach ($all_coaches as $coach_id => $name) {
 }
 
 foreach ($all_donations as $i => $don) {
+
+	$donations[$don['manager_id']]['total'] += $don['donation_amount'];
+	$donations['total']['total'] += $don['donation_amount'];
+
 	if($don['donation_amount'] > 100000) {
 		$donations['total']['1L']++;
 		$donations['total']['1L_amount'] += $don['donation_amount'];
 
 		$donations[$don['manager_id']]['1L']++;
-		$donations[$don['manager_id']]['1L_amount'] += $don['donation_amount'];		
+		$donations[$don['manager_id']]['1L_amount'] += $don['donation_amount'];
+
+		$donations['total']['12K']++;
+		$donations['total']['12K_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['12K']++;
+		$donations[$don['manager_id']]['12K_amount'] += $don['donation_amount'];
+
+
+		$donations['total']['donuted']++;
+		$donations['total']['donuted_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['donuted']++;
+		$donations[$don['manager_id']]['donuted_amount'] += $don['donation_amount'];
+
 	} elseif($don['donation_amount'] > 12000) {
 		$donations['total']['12K']++;
 		$donations['total']['12K_amount'] += $don['donation_amount'];
 
 		$donations[$don['manager_id']]['12K']++;
 		$donations[$don['manager_id']]['12K_amount'] += $don['donation_amount'];
-	} elseif($don['donation_amount'] > 100) {
-		$donations['total']['100']++;
-		$donations['total']['100_amount'] += $don['donation_amount'];
 
-		$donations[$don['manager_id']]['100']++;
-		$donations[$don['manager_id']]['100_amount'] += $don['donation_amount'];		
+
+		$donations['total']['donuted']++;
+		$donations['total']['donuted_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['donuted']++;
+		$donations[$don['manager_id']]['donuted_amount'] += $don['donation_amount'];
+
+
+	} elseif($don['donation_amount'] > 0) {
+		$donations['total']['donuted']++;
+		$donations['total']['donuted_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['donuted']++;
+		$donations[$don['manager_id']]['donuted_amount'] += $don['donation_amount'];
 	}
 }
 $total_donation_count = count($all_donations);
 if($total_donation_count) {
 	foreach($donations as $index => $value) {
-		$donations[$index]['100_percent'] = round($donations[$index]['100'] / $total_volunteers * 100, 2);
-		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $total_volunteers * 100, 2);
-		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $total_volunteers * 100, 2);
+		if($index == 'total' or !isset($couch_volunteers_count[$index]))
+			continue;
+		$donations[$index]['donuted_percent'] = round($donations[$index]['donuted'] / $couch_volunteers_count[$index] * 100, 0);
+		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $couch_volunteers_count[$index] * 100, 0);
+		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $couch_volunteers_count[$index] * 100, 0);
 	}
 }
 
