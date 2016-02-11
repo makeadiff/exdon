@@ -13,7 +13,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 	<td>All</td>
 	<td>-</td>
 	<td ><?php echo $total_volunteers ?></td>
-	<td class="line"><?php echo $donations['total']['total'] ?></td>
+	<td class="line"><?php echo money_format("%.0n",$donations['total']['total']) ?></td>
 	<td><?php echo $donations['total']['donuted'] ?></td>
 	<td class="line"><?php echo $donations['total']['donuted_percent'] ?>%</td>
 	<td><?php echo $donations['total']['12K'] ?></td>
@@ -31,7 +31,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 					else
 						echo "0";
 		?></td>
-		<td class="line"><?php echo $donations[$coach_id]['total'] ?></td>
+		<td class="line"><?php echo money_format("%.0n",$donations[$coach_id]['total']) ?></td>
 		<td><?php echo $donations[$coach_id]['donuted'] ?></td>
 		<td class="line"><?php echo $donations[$coach_id]['donuted_percent'] ?>%</td>
 		<td><?php echo $donations[$coach_id]['12K'] ?></td>

@@ -78,35 +78,16 @@ foreach ($all_donations as $i => $don) {
 		$donations[$don['manager_id']]['1L']++;
 		$donations[$don['manager_id']]['1L_amount'] += $don['donation_amount'];
 
+	}
+	if($don['donation_amount'] > 12000) {
 		$donations['total']['12K']++;
 		$donations['total']['12K_amount'] += $don['donation_amount'];
 
 		$donations[$don['manager_id']]['12K']++;
 		$donations[$don['manager_id']]['12K_amount'] += $don['donation_amount'];
 
-
-		$donations['total']['donuted']++;
-		$donations['total']['donuted_amount'] += $don['donation_amount'];
-
-		$donations[$don['manager_id']]['donuted']++;
-		$donations[$don['manager_id']]['donuted_amount'] += $don['donation_amount'];
-
-	} elseif($don['donation_amount'] > 12000) {
-		$donations['total']['12K']++;
-		$donations['total']['12K_amount'] += $don['donation_amount'];
-
-		$donations[$don['manager_id']]['12K']++;
-		$donations[$don['manager_id']]['12K_amount'] += $don['donation_amount'];
-
-
-		$donations['total']['donuted']++;
-		$donations['total']['donuted_amount'] += $don['donation_amount'];
-
-		$donations[$don['manager_id']]['donuted']++;
-		$donations[$don['manager_id']]['donuted_amount'] += $don['donation_amount'];
-
-
-	} elseif($don['donation_amount'] > 0) {
+	}
+	if($don['donation_amount'] > 0) {
 		$donations['total']['donuted']++;
 		$donations['total']['donuted_amount'] += $don['donation_amount'];
 
@@ -123,6 +104,10 @@ if($total_donation_count) {
 		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $couch_volunteers_count[$index] * 100, 0);
 		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $couch_volunteers_count[$index] * 100, 0);
 	}
+
+	$donations['total']['donuted_percent'] = round($donations['total']['donuted'] / $total_volunteers * 100, 0);
+	$donations['total']['12K_percent'] = round($donations['total']['12K_percent'] / $total_volunteers * 100, 0);
+	$donations['total']['1L_percent'] = round($donations['total']['1L_percent'] / $total_volunteers * 100, 0);
 }
 
 
