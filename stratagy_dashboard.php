@@ -26,8 +26,9 @@ $external = array();
 $donut = array();
 
 $donation_status_check = '';
-if(isset($city_checks)) $city_checks = ' AND ' . $city_checks;
-else $city_checks = '';
+if(isset($city_checks)) $city_checks = ' AND ' . $city_checks . ' AND users.is_deleted = 0';
+else $city_checks = 'users.is_deleted = 0';
+
 
 if($donation_status == 'deposited') $donation_status_check = " AND D.donation_status='RECEIPT SENT'";
 if($donation_status == 'not_deposited') $donation_status_check = " AND D.donation_status!='RECEIPT SENT'"; // TO BE APPROVED BY POC and HAND OVER TO FC PENDING is not deposited. Rest all is deposited
@@ -71,6 +72,15 @@ $amount_template = array(
 		'donuted'			=>	0,
 		'donuted_amount'	=>	0,
 		'donuted_percent'	=>	0,
+		'4K'			=>	0,
+		'4K_amount'	=>	0,
+		'4K_percent'	=>	0,
+		'8K'			=>	0,
+		'8K_amount'	=>	0,
+		'8K_percent'	=>	0,
+		'6K'			=>	0,
+		'6K_amount'	=>	0,
+		'6K_percent'	=>	0,
 		'12K'			=>	0,
 		'12K_amount'	=>	0,
 		'12K_percent'	=>	0,
@@ -105,6 +115,30 @@ foreach ($all_donations as $i => $don) {
 		$donations[$don['manager_id']]['12K_amount'] += $don['donation_amount'];
 
 	}
+	if($don['donation_amount'] > 8000) {
+		$donations['total']['8K']++;
+		$donations['total']['8K_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['8K']++;
+		$donations[$don['manager_id']]['8K_amount'] += $don['donation_amount'];
+
+	}
+	if($don['donation_amount'] > 6000) {
+		$donations['total']['6K']++;
+		$donations['total']['6K_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['6K']++;
+		$donations[$don['manager_id']]['6K_amount'] += $don['donation_amount'];
+
+	}
+	if($don['donation_amount'] > 4000) {
+		$donations['total']['4K']++;
+		$donations['total']['4K_amount'] += $don['donation_amount'];
+
+		$donations[$don['manager_id']]['4K']++;
+		$donations[$don['manager_id']]['4K_amount'] += $don['donation_amount'];
+
+	}
 	if($don['donation_amount'] > 0) {
 		$donations['total']['donuted']++;
 		$donations['total']['donuted_amount'] += $don['donation_amount'];
@@ -118,14 +152,20 @@ if($total_donation_count) {
 	foreach($donations as $index => $value) {
 		if($index == 'total' or !isset($couch_volunteers_count[$index]))
 			continue;
-		$donations[$index]['donuted_percent'] = round($donations[$index]['donuted'] / $couch_volunteers_count[$index] * 100, 0);
-		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $couch_volunteers_count[$index] * 100, 0);
-		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $couch_volunteers_count[$index] * 100, 0);
+		$donations[$index]['donuted_percent'] = round($donations[$index]['donuted'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
+		$donations[$index]['4K_percent'] = round($donations[$index]['4K'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
+		$donations[$index]['8K_percent'] = round($donations[$index]['8K'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
+		$donations[$index]['6K_percent'] = round($donations[$index]['6K'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
+		$donations[$index]['12K_percent'] = round($donations[$index]['12K'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
+		$donations[$index]['1L_percent'] = round($donations[$index]['1L'] / $couch_volunteers_count[$index] * 100, 0,PHP_ROUND_HALF_DOWN);
 	}
 
-	$donations['total']['donuted_percent'] = round($donations['total']['donuted'] / $total_volunteers * 100, 0);
-	$donations['total']['12K_percent'] = round($donations['total']['12K'] / $total_volunteers * 100, 0);
-	$donations['total']['1L_percent'] = round($donations['total']['1L'] / $total_volunteers * 100, 0);
+	$donations['total']['donuted_percent'] = round($donations['total']['donuted'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
+	$donationsPHP_ROUND_HALF_DOWN['total']['4K_percent'] = round($donations['total']['4K'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
+	$donationsPHP_ROUND_HALF_DOWN['total']['6K_percent'] = round($donations['total']['6K'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
+	$donationsPHP_ROUND_HALF_DOWN['total']['8K_percent'] = round($donations['total']['8K'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
+	$donationsPHP_ROUND_HALF_DOWN['total']['12K_percent'] = round($donations['total']['12K'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
+	$donations['total']['1L_percent'] = round($donations['total']['1L'] / $total_volunteers * 100, 0,PHP_ROUND_HALF_DOWN);
 }
 
 

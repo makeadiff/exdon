@@ -25,9 +25,64 @@ function showDateRange() {
 	$("#select-date-area").toggle();
 }
 
+function ChangeAmount() {
+	var selected_amount = $(this).val();
+	console.log(selected_amount);
+
+	if(selected_amount == 'donuted') {
+		$(".donuted").show();
+		$(".4k").hide();
+		$(".6k").hide();
+		$(".8k").hide();
+		$(".12k").hide();
+		$(".1l").hide();
+
+	}else if(selected_amount == '4k') {
+		$(".donuted").hide();
+		$(".4k").show();
+		$(".6k").hide();
+		$(".8k").hide();
+		$(".12k").hide();
+		$(".1l").hide();
+
+	} else if(selected_amount == '6k') {
+		$(".donuted").hide();
+		$(".4k").hide();
+		$(".6k").show();
+		$(".8k").hide();
+		$(".12k").hide();
+		$(".1l").hide();
+
+	}else if(selected_amount == '8k') {
+		$(".donuted").hide();
+		$(".4k").hide();
+		$(".6k").hide();
+		$(".8k").show();
+		$(".12k").hide();
+		$(".1l").hide();
+
+	} else if(selected_amount == '12k') {
+		$(".donuted").hide();
+		$(".4k").hide();
+		$(".6k").hide();
+		$(".8k").hide();
+		$(".12k").show();
+		$(".1l").hide();
+
+	} else if(selected_amount == '1l') {
+		$(".donuted").hide();
+		$(".4k").hide();
+		$(".6k").hide();
+		$(".8k").hide();
+		$(".12k").hide();
+		$(".1l").show();
+
+	}
+}
+
 
 function siteInit() {
-	$( "#from" ).datepicker({
+	/*$( "#from" ).datepicker({
       defaultDate: "+1w",
       dateFormat: "yy-mm-dd",
       changeMonth: true,
@@ -46,7 +101,7 @@ function siteInit() {
       }
     });
     $("#select-date-toggle").click(showDateRange);
-
+*/
 	$("a.confirm").click(function(e) { //If a link has a confirm class, confrm the action
 		var action = (this.title) ? this.title : "do this";
 		action = action.substr(0,1).toLowerCase() + action.substr(1); //Lowercase the first char.
@@ -69,6 +124,15 @@ function siteInit() {
 
 		$("#coach_id").html(select);
 	});
+
+	$(".donuted").show();
+	$(".4k").hide();
+	$(".6k").hide();
+	$(".8k").hide();
+	$(".12k").hide();
+	$(".1l").hide();
+
+	$("#amount").change(ChangeAmount);
 
 
 	if(window.init && typeof window.init == "function") init(); //If there is a function called init(), call it on load
