@@ -19,9 +19,11 @@ class Donation extends DBTable {
 	 */
 	function add($data) {
 		global $sql;
+		$eighty_g_required = 0;
+		$donor_address = '';
 		extract($data);
 
-		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone);
+		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone, $donor_address);
 
 		if(isset($donation_type) and ($donation_type == 'globalgiving' or $donation_type == 'ecs' or $donation_type == 'online')) {
 			return $this->addExternal($donation_type, $data);
@@ -34,6 +36,7 @@ class Donation extends DBTable {
 				'donation_amount'	=> $amount,
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
+				'eighty_g_required'	=> ($eighty_g_required) ? 1 : 0,
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
 			));
 		

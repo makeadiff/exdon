@@ -12,12 +12,12 @@ var coaches = <?php echo json_encode($coaches); ?>;
 </script>
 
 <table class="table table-striped">
-<tr><th>Type</th><th>Amount</th><th>Deposited</th><!-- <th>3 Week Late</th> --><th>Donor</th><th>Fundraiser</th><th>Status</th></tr>
+<tr><th>Type</th><th>Amount</th><th>Deposited</th><th>3 Week Late</th><th>Donor</th><th>Fundraiser</th><th>Status</th></tr>
 <tr>
 	<td>Total</td>
 	<td><?php echo money_format("%n", $total_amount) ?></td>
 	<td><?php echo money_format("%n", $total_deposited) ?></td>
-	<!-- <td><?php echo money_format("%n", $total_late) ?></td> -->
+	<td><?php echo money_format("%n", $total_late) ?></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -27,7 +27,7 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td><?php echo i($all_donation_types, $don['donation_type'], $don['donation_type']) ?></td>
 	<td><?php echo money_format("%n", $don['donation_amount']) ?></td>
 	<td><?php echo money_format("%n", $don['amount_deposited']) ?></td>
-	<!-- <td><?php echo money_format("%n", $don['amount_late']) ?></td> -->
+	<td><?php echo money_format("%n", $don['amount_late']) ?></td>
 	<td><?php echo $don['donor_name'] ?></td>
 	<td><?php echo $don['fundraiser_name'] ?></td>
 	<td><?php echo $don['donation_status'] ?></td>
