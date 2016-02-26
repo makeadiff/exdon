@@ -27,6 +27,11 @@ if(i($QUERY, 'status_action') == 'approve') {
 
 // Initialize all necessany things. 
 $crud = new Crud("external_donations");
+$crud->save_states[] = 'city_id';
+$crud->save_states[] = 'donation_type';
+$crud->save_states[] = 'donation_status';
+$crud->save_states[] = 'from';
+$crud->save_states[] = 'to';
 $page_title = "External Donations Approval";
 $crud->title = "External Donation";
 $crud->allow['add'] = false;
@@ -52,7 +57,7 @@ $all_cities[0] = 'Any';
 
 $html = new HTML;
 $html->options['output'] = 'return';
-$crud->code['before_content'] = '<form action="" method="post" class="form-area">'
+$crud->code['before_content'] = '<form action="donations.php" method="post" class="form-area">'
 	. $html->buildInput("city_id", 'City', 'select', $city_id, array('options' => $all_cities))
 	. '<div id="select-date-area">'
 	. $html->buildInput("donation_type", 'Type', 'select', $donation_type, array('options' => $all_donation_types))
