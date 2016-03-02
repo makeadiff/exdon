@@ -28,6 +28,12 @@ class Donation extends DBTable {
 		if(!$donor_id) return $this->_error("Can't find a valid Donor ID for this donation.");
 		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
 
+		if(isset($created_at) and $created_at) {
+			$created_at = date("Y-m-d H:i:s", strtotime($created_at));
+		} else {
+			$created_at = date('Y-m-d H:i:s');
+		}
+
 		if(isset($donation_type) and ($donation_type == 'globalgiving' or $donation_type == 'ecs' or $donation_type == 'online')) {
 			return $this->addExternal($donation_type, $data);
 		}
@@ -68,6 +74,12 @@ class Donation extends DBTable {
 		extract($data);
 
 		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone);
+
+		if(isset($created_at) and $created_at) {
+			$created_at = date("Y-m-d H:i:s", strtotime($created_at));
+		} else {
+			$created_at = date('Y-m-d H:i:s');
+		}
 
 		// Insert the donation
 		$donation_id = $sql->insert("external_donations", array(
