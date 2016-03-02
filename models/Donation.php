@@ -42,6 +42,11 @@ class Donation extends DBTable {
 				'eighty_g_required'	=> ($eighty_g_required) ? 1 : 0,
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
 				'source_id'			=> 1,
+
+				// Legacy stuff
+				'donation_type'		=> 'GEN',
+				'version'			=> 1,
+				'product_id'		=> 1,
 			));
 		
 		return $donation_id;
