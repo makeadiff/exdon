@@ -10,7 +10,7 @@ $api = new API;
 $api->post('/donation/add', function() {
 	global $QUERY;
 
-	if(isset($QUERY['created_at'])) $QUERY['created_at'] 	= date("Y-m-d", strtotime($QUERY['created_at']));
+	if(isset($QUERY['created_at']) and $QUERY['created_at']) $QUERY['created_at'] 	= date("Y-m-d", strtotime($QUERY['created_at']));
 	else $QUERY['created_at'] = date('Y-m-d H:i:s');
 	if(isset($QUERY['donation_type']) and $QUERY['donation_type'] == 'gg') $QUERY['donation_type'] = 'globalgiving';
 

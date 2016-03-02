@@ -29,7 +29,8 @@ class Donation extends DBTable {
 		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
 
 		if(isset($created_at) and $created_at) {
-			$created_at = date("Y-m-d H:i:s", strtotime($created_at));
+			if($created_at == '1970-01-01') $created_at = date("Y-m-d H:i:s");
+			else $created_at = date("Y-m-d H:i:s", strtotime($created_at));
 		} else {
 			$created_at = date('Y-m-d H:i:s');
 		}
