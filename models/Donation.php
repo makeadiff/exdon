@@ -36,6 +36,7 @@ class Donation extends DBTable {
 		$donation_id = $sql->insert("donations", array(
 				'donour_id'			=> $donor_id,
 				'fundraiser_id'		=> $fundraiser_id,
+				'updated_by'		=> $fundraiser_id,
 				'donation_amount'	=> $amount,
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
@@ -73,6 +74,7 @@ class Donation extends DBTable {
 				'donation_type'		=> $donation_type,
 				'donor_id'			=> $donor_id,
 				'fundraiser_id'		=> $fundraiser_id,
+				'updated_by'		=> $fundraiser_id,
 				'amount'			=> $amount,
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
