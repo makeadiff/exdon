@@ -25,6 +25,9 @@ class Donation extends DBTable {
 
 		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone, $donor_address);
 
+		if(!$donor_id) return $this->_error("Can't find a valid Donor ID for this donation.");
+		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
+
 		if(isset($donation_type) and ($donation_type == 'globalgiving' or $donation_type == 'ecs' or $donation_type == 'online')) {
 			return $this->addExternal($donation_type, $data);
 		}
@@ -38,6 +41,7 @@ class Donation extends DBTable {
 				'updated_at'		=> 'NOW()',
 				'eighty_g_required'	=> ($eighty_g_required) ? 1 : 0,
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
+				'source_id'			=> 1,
 			));
 		
 		return $donation_id;
@@ -68,6 +72,7 @@ class Donation extends DBTable {
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
+				'source_id'			=> 1,
 			));
 		
 		return $donation_id;
@@ -115,6 +120,7 @@ class Donation extends DBTable {
 		return $donations;
 	}
 
+	/// Set the given donation as approved - with the user id(second argument) as the approver.
 	function approveDonation($donation_id, $approver_id) {
 		$donatinos_for_approval = $this->getDonationsForApproval($approver_id);
 		$donation_ids_for_approval = array_keys($donatinos_for_approval);
@@ -128,8 +134,8 @@ class Donation extends DBTable {
 		$this->save();
 	}
 
-
-	function _error($message) {
+	/// Use this to handle errors.
+	private function _error($message) {
 		$this->error = $message;
 		return false;
 	}
