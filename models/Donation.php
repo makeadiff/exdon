@@ -92,7 +92,6 @@ class Donation extends DBTable {
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
-				'source_id'			=> 1,
 			));
 		
 		return $donation_id;
