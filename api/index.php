@@ -41,7 +41,7 @@ $api->get('/donation/{donation_id}/approve/{poc_id}', function ($donation_id, $p
 	showSuccess("Donation approved", array('donation_id' => $donation_id));
 });
 
-$api->any("/user/login", function () {
+$api->request("/user/login", function () {
 	global $QUERY;
 	$user = new User;
 

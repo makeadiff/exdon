@@ -36,7 +36,7 @@ class API {
 	/** Handle a request.
 	 * Example: $api->any('/user/login', function() { print "Yo!"; });
 	 */
-	function any($route, $handler, $public = false) {
+	function request($route, $handler, $public = false) {
 		$this->actions[] = array(
 			'method'	=> '',
 			'route'		=> $route,
