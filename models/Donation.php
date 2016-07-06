@@ -45,10 +45,10 @@ class Donation extends DBTable {
 				'fundraiser_id'		=> $fundraiser_id,
 				'updated_by'		=> $fundraiser_id,
 				'donation_amount'	=> $amount,
-				'comment'		=> $comment,
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
 				'eighty_g_required'	=> ($eighty_g_required) ? 1 : 0,
+				'comment'		=> $comment,
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
 				'source_id'			=> 1,
 
