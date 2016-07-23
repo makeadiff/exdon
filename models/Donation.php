@@ -57,7 +57,14 @@ class Donation extends DBTable {
 				'version'			=> 1,
 				'product_id'		=> 1,
 			));
-		
+
+		$sms = new SMS();
+		$sms->message = "Dear $donor_name, Thanks a lot for your contribution of Rs. $amount towards Make a Difference. This is only an acknowledgement. A confirmation and e-receipt would be sent once the amount reaches us.";
+		$sms->number = $donor_phone;
+		$sms->send();
+
+
+
 		return $donation_id;
 	}
 
