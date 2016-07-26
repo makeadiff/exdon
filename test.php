@@ -8,10 +8,12 @@ require 'models/Email.php';
 $donor_name = "Sanjay";
 $amount = 10;
 $donor_email = "sanjay@makeadiff.in";
-$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://'  . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/';
+//$base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 'https://' : 'http://'  . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/';
+$base_url = '';
 $images[] = $base_url . 'assets/mad-letterhead-left.png';
 $images[] = $base_url . 'assets/mad-letterhead-logo.png';
 $images[] = $base_url . 'assets/mad-letterhead-right.png';
+
 
 
 $email = new Email();

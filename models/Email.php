@@ -12,8 +12,8 @@ class Email
     public $images = array();
 
     private $host = 'smtp.gmail.com';
-    private $username = 'noreply@makeadiff.in';
-    private $password = 'noreplygonemad';
+    private $u = 'noreply@makeadiff.in';
+    private $p = 'noreplygonemad';
 
     function send() {
 
@@ -29,11 +29,12 @@ class Email
         }
 
 
+
         $smtp = Mail::factory('smtp',
             array ('host' => $this->host,
                 'auth' => true,
-                'username' => $this->username,
-                'password' => $this->password));
+                'username' => $this->u,
+                'password' => $this->p));
 
         $body = $mime->get();
         $headers = $mime->headers($headers);
