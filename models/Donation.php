@@ -23,10 +23,13 @@ class Donation extends DBTable {
 		$donor_address = '';
 		extract($data);
 
+
+
 		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone, $donor_address);
 
-		if(!$donor_id) return $this->_error("Can't find a valid Donor ID for this donation.");
-		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
+		if(!$donor_id) return $this->_error("Can't find a valid Donor. Try logging out of the app and logging back in again.");
+		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser. Try logging out of the app and logging back in again.");
+
 
 		if(isset($created_at) and $created_at) {
 			if($created_at == '1970-01-01') $created_at = date("Y-m-d H:i:s");
@@ -202,4 +205,78 @@ class Donation extends DBTable {
 		$this->error = $message;
 		return false;
 	}
+
+
+	// Used to validate the donation
+	function validate($data) {
+
+		global $sql;
+		$donor_address = '';
+		extract($data);
+
+		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone, $donor_address);
+
+		if(!$donor_id) return $this->_error("Can't find a valid Donor ID for this donation. Try logging out of the app and logging back in again.");
+		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
+
+		if($this->checkIfDonorDetailsSameAsVolunteerBelowXAmount($donor_email,$donor_phone,$fundraiser_id)) {
+			return $this->_error("You seem to have entered your own details in place of the donor. If you continue, the donor won't receive the acknowledgement or receipt. Are you sure you want to continue?");
+		}elseif ($created_date = $this->checkIfRepeatDonation($donor_id,$fundraiser_id,$amount)) {
+			return $this->_error("Donation of Rs. $amount from $donor_name has already been added on $created_date. Are you sure you want to add the same amount again?");
+		}elseif($data = $this->checkIfRepeatDonationWithDifferentAmount($donor_id,$fundraiser_id)) {
+			return $this->_error("Donation of Rs. $data[amount] from $donor_name has already been added on $data[created_date]. Are you sure you want to add another amount again?");
+		}
+
+		return true;
+
+
+	}
+
+	function checkIfDonorDetailsSameAsVolunteerBelowXAmount($donor_email,$donor_phone,$fundraiser_id) {
+		global $sql;
+
+		$fundraiser = $sql->getAssoc("SELECT phone_no,email FROM users WHERE id = $fundraiser_id");
+
+		if(empty($fundraiser)) {
+			return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
+		}
+
+		if(($fundraiser['phone_no'] == $donor_phone) || ($fundraiser['email'] == $donor_email)) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+
+	function checkIfRepeatDonation($donor_id,$fundraiser_id,$amount) {
+		global $sql;
+
+		$donation_date = $sql->getOne("SELECT created_at FROM donations WHERE donour_id = $donor_id AND fundraiser_id = $fundraiser_id AND donation_amount = $amount");
+
+		if(empty($donation_date)) {
+			return false;
+		} else {
+			$formatted_date = date('j-M-Y',strtotime($donation_date));
+			return $formatted_date;
+		}
+	}
+
+	function checkIfRepeatDonationWithDifferentAmount($donor_id,$fundraiser_id) {
+		global $sql;
+
+		$donation = $sql->getAssoc("SELECT created_at,donation_amount FROM donations WHERE donour_id = $donor_id AND fundraiser_id = $fundraiser_id");
+
+		if(empty($donation)) {
+			return false;
+		} else {
+			$created_date = date('j-M-Y',strtotime($donation['created_at']));
+			$amount = $donation['donation_amount'];
+			$return = compact("created_date", "amount");
+			return $return;
+		}
+	}
+
+
 }

@@ -10,7 +10,7 @@ $api = new API;
 $api->post('/donation/add', function() {
 	global $QUERY;
 
-	if(isset($QUERY['created_at']) and $QUERY['created_at']) $QUERY['created_at'] 	= date("Y-m-d", strtotime($QUERY['created_at']));
+	if(isset($QUERY['created_at']) and $QUERY['created_at']) $QUERY['created_at'] = date("Y-m-d", strtotime($QUERY['created_at']));
 	else $QUERY['created_at'] = date('Y-m-d H:i:s');
 	if(isset($QUERY['donation_type']) and $QUERY['donation_type'] == 'gg') $QUERY['donation_type'] = 'globalgiving';
 
@@ -18,7 +18,21 @@ $api->post('/donation/add', function() {
 	$donation_id = $donations->add($QUERY);
 
 	if($donation_id) showSuccess("Donation inserted succesfully : Donation ID '.$donation_id.'", array("donation" => array("id" => $donation_id)));
-	else showError("Failure in insterting dontaion at server. Try again after some time.");
+	else showError("Failure in inserting donation at server. Try again after some time.");
+});
+
+$api->post('/donation/validate', function() {
+	global $QUERY;
+
+	if(isset($QUERY['created_at']) and $QUERY['created_at']) $QUERY['created_at'] = date("Y-m-d", strtotime($QUERY['created_at']));
+	else $QUERY['created_at'] = date('Y-m-d H:i:s');
+	if(isset($QUERY['donation_type']) and $QUERY['donation_type'] == 'gg') $QUERY['donation_type'] = 'globalgiving';
+
+	$donation = new Donation;
+	$result = $donation->validate($QUERY);
+
+	if($result) showSuccess("Validated successfully");
+	else showError($donation->error);
 });
 
 $api->get('/donation/get_donations_for_approval/{poc_id}', function ($poc_id) {
@@ -63,6 +77,7 @@ $api->handle();
 function showSuccess($message, $extra = array()) {
 	showSituation('success', $message, $extra);
 }
+
 function showError($message, $extra = array()) {
 	showSituation('error', $message, $extra);
 }
