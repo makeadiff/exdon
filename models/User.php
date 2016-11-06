@@ -1,7 +1,7 @@
 <?php
 class User extends DBTable {
 	public $user;
-	public $role_ids = array('CFR POC' => 9, 'Volunteer' => 10);
+	public $role_ids = array('FC' => 8, 'CFR POC' => 9, 'Volunteer' => 10);
 	public $error;
 
 	function __construct($user_id = 0) {

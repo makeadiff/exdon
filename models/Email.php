@@ -5,47 +5,44 @@ error_reporting(E_ERROR | E_PARSE);
 
 class Email
 {
-    public $to = '';
-    public $subject = '';
-    public $html = '';
-    public $from = '';
-    public $images = array();
+	public $to = '';
+	public $subject = '';
+	public $html = '';
+	public $from = '';
+	public $images = array();
 
-    private $host = 'smtp.gmail.com';
-    private $u = 'noreply@makeadiff.in';
-    private $p = 'noreplygonemad';
+	private $smtp_host = 'smtp.gmail.com';
+	private $smtp_username = 'noreply@makeadiff.in';
+	private $smtp_password = 'noreplygonemad';
 
-    function send() {
+	function send() {
+		$headers = array (  'From'      => $this->from,
+							'To'        => $this->to,
+							'Subject'   => $this->subject);
 
-        $headers = array ('From' => $this->from,
-            'To' => $this->to,
-            'Subject' => $this->subject);
+		$mime = new Mail_mime(array('eol' => "\n"));
+		$mime->setHTMLBody($this->html);
 
-        $mime = new Mail_mime(array('eol' => "\n"));
-        $mime->setHTMLBody($this->html);
+		foreach($this->images as $image) {
+			$sucess[] = $mime->addHTMLImage($image,"image/png");
+		}
 
-        foreach($this->images as $image) {
-            $sucess[] = $mime->addHTMLImage($image,"image/png");
-        }
+		$smtp = Mail::factory('smtp',
+			array ( 'host'     => $this->smtp_host,
+					'auth'     => true,
+					'username' => $this->smtp_username,
+					'password' => $this->smtp_password));
 
+		$body = $mime->get();
+		$headers = $mime->headers($headers);
 
+		$mail = $smtp->send($this->to, $headers, $body);
 
-        $smtp = Mail::factory('smtp',
-            array ('host' => $this->host,
-                'auth' => true,
-                'username' => $this->u,
-                'password' => $this->p));
+		if (PEAR::isError($mail)) {
+			//echo("<p>" . $mail->getMessage() . "</p>");
+			return false;
+		}
 
-        $body = $mime->get();
-        $headers = $mime->headers($headers);
-
-        $mail = $smtp->send($this->to, $headers, $body);
-
-        if (PEAR::isError($mail)) {
-            //echo("<p>" . $mail->getMessage() . "</p>");
-            return false;
-        }
-
-        return true;
-    }
+		return true;
+	}
 }
