@@ -43,7 +43,11 @@ $all_donation_types = array(
 		'globalgiving'	=> 'Global Giving',
 		'online'		=> 'Online',
 		'other'			=> "Other",
-		'any'			=> 'Any'
+		'any'			=> 'Any',
+		'nach'			=> 'NACH',
+		'global_giving'	=> 'Global Giving',
+		'give_india'	=> 'Give India',
+		'mad_website'	=> 'MAD Website'
 	);
 $all_donation_status = array(
 		'TO_BE_APPROVED_BY_POC'	=> 'Not Deposited',

@@ -4,7 +4,7 @@ require('common.php');
 // $opts = getOptions($QUERY);
 // extract($opts);
 
-$types = array('ecs', 'online', 'global_giving');
+$types = array('nach', 'global_giving', 'mad_website', 'give_india');
 
 $data = $sql->getById("SELECT donation_type, SUM(amount) AS amount FROM external_donations WHERE donation_status='DEPOSIT COMPLETE' GROUP BY donation_type");
 $total = 0;
@@ -24,9 +24,10 @@ $page_title = 'Revenue Source Breakdown';
 $weekly_graph_data = array();
 $annual_graph_data = array(
 		array('Total', 'Sources'),
-		array('ECS',	$percentage['ecs']),
-		array('Online',	$percentage['online']),
-		array('Global Giving',		$percentage['global_giving']),
+		array('NACH',	$percentage['nach']),
+		array('Global Giving',	$percentage['global_giving']),
+		array('MAD Website',		$percentage['mad_website']),
+		array('Give India',		$percentage['give_india']),
 	);
 
 render('../reports/template/graph.php');

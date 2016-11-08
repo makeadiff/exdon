@@ -14,7 +14,7 @@ class Donation extends DBTable {
 	 * 				'fundraiser_id'	=> 4, // The ID from the 'users' table. This donation was raised by this user
 	 * 				'amount'		=> 13,
 	 * 				'created_at'	=> date('Y-m-d H:i:s'),
-	 * 				'donation_type'	=> 'ecs', // IF this is present - and the value is 'globalgiving' or 'ecs' or 'online', it becomes an external donation. 
+	 * 				'donation_type'	=> 'nach', // IF this is present - and the value is 'global_giving' or 'mad_website' or 'give_india' or 'nach', it becomes an external donation.
 	 * ));
 	 */
 	function add($data) {
@@ -38,7 +38,7 @@ class Donation extends DBTable {
 			$created_at = date('Y-m-d H:i:s');
 		}
 
-		if(isset($donation_type) and ($donation_type == 'globalgiving' or $donation_type == 'ecs' or $donation_type == 'online')) {
+		if(isset($donation_type) and ($donation_type == 'global_giving' or $donation_type == 'mad_website' or $donation_type == 'give_india' or $donation_type == 'nach')) {
 			return $this->addExternal($donation_type, $data);
 		}
 
@@ -107,7 +107,7 @@ class Donation extends DBTable {
 		return $donation_id;
 	}
 
-	/** Add an external donation. This is for ECS, Global Giving and Online donations only. 
+	/** Add an external donation. This is for NACH, Global Giving, Give India and MAD Website donations only.
 	 * Example - $donation->add($donation_type, array(
 	 * 				'donor_name'	=> 'Binny V A',
 	 * 				'donor_email'	=> 'binnyvx@gmail.com',
@@ -120,6 +120,11 @@ class Donation extends DBTable {
 	function addExternal($donation_type, $data) {
 		global $sql;
 		extract($data);
+
+		//Convert monthly amount of nach to yearly amount
+		if($donation_type == "nach") {
+			$amount = $amount * 12;
+		}
 
 		$donor_id = $this->findDonor($donor_name, $donor_email, $donor_phone);
 
