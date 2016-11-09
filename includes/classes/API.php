@@ -47,6 +47,7 @@ class API {
 
 	function handle() {
 		$method = $_SERVER['REQUEST_METHOD'];
+		$route_found = false;
 
 		foreach ($this->actions as $act) {
 			if($act['method'] and $act['method'] != $method) continue;
@@ -54,6 +55,12 @@ class API {
 			if($vars === false) continue;
 
 			call_user_func_array($act['handler'], $vars);
+			$route_found = true;
+		}
+
+		if(!$route_found) { // 404
+			$handler = $this->actions['404']['handler'];
+			call_user_func_array($handler, array());
 		}
 	}
 

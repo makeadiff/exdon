@@ -3,6 +3,7 @@ require 'common.php';
 require '../includes/classes/API.php';
 
 header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
 
 $sql->options['error_handling'] = 'die';
 $api = new API;
