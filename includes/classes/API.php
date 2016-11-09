@@ -13,7 +13,7 @@ class API {
 	}
 
 	function post($route, $handler, $public = false) {
-		$this->actions[] = array(
+		$this->actions[$route] = array(
 			'method'	=> 'POST',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -25,7 +25,7 @@ class API {
 	 * Example: $api->get('/user/{user_id}/fetch/{content_name}', function($user_id, $content_name) { dump($user_id, $content_name); });
 	 */
 	function get($route, $handler, $public = false) {
-		$this->actions[] = array(
+		$this->actions[$route] = array(
 			'method'	=> 'GET',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -37,7 +37,7 @@ class API {
 	 * Example: $api->any('/user/login', function() { print "Yo!"; });
 	 */
 	function request($route, $handler, $public = false) {
-		$this->actions[] = array(
+		$this->actions[$route] = array(
 			'method'	=> '',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -45,17 +45,29 @@ class API {
 		);
 	}
 
+	function notFound($handler) {
+		$this->actions['404'] = array(
+			'method'	=> '',
+			'route'		=> '404',
+			'handler'	=> $handler,
+			'public'	=> false,
+		);
+	}
+
 	function handle() {
 		$method = $_SERVER['REQUEST_METHOD'];
 		$route_found = false;
 
-		foreach ($this->actions as $act) {
+		$route_found = false;
+
+		foreach ($this->actions as $route => $act) {
 			if($act['method'] and $act['method'] != $method) continue;
 			$vars = $this->_match_route($act['route']);
 			if($vars === false) continue;
-
-			call_user_func_array($act['handler'], $vars);
-			$route_found = true;
+			else {
+				call_user_func_array($act['handler'], $vars);
+				$route_found = true;
+			}
 		}
 
 		if(!$route_found) { // 404
