@@ -95,7 +95,7 @@ class API {
 			for($i=0; $i<count($matches[0]); $i++) {
 				$str = $matches[0][$i];
 				$vars[] = $matches[1][$i]; // Get the list of variables in the route into a different array.
-				$parsable_route = str_replace($str, "(\w+)", $parsable_route);
+				$parsable_route = str_replace($str, "([^\\/]+)", $parsable_route);
 			}
 
 			// Then we see if the regexp matches the current route.

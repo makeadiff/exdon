@@ -36,6 +36,26 @@ $api->post('/donation/validate', function() {
 	else showError($donation->error);
 });
 
+$api->get('/donation/get_donations_by_user/{fundraiser_id}', function ($fundraiser_id) {
+	$donation = new Donation;
+	$my_donations = $donation->getDonationsByUser($fundraiser_id);
+
+	if($my_donations)
+		showSuccess(count($my_donations) . " donation(s).", array('donations' => $my_donations));
+	else {
+		$error = $donation->error;
+		if(!$error) $error = "Can't find any donations by this user";
+		showError($error);
+	}
+});
+
+$api->get('/donation/get_total_donation_by_email/{user_email}', function($user_email) {
+	$donation = new Donation;
+	$total = $donation->getTotalDonations(array('email' => $user_email));
+
+	showSuccess("Donation Amount: $total", array('total' => $total));
+});
+
 $api->get('/donation/get_donations_for_poc_approval/{poc_id}', function ($poc_id) {
 	$donation = new Donation;
 	$donations_for_approval = $donation->getDonationsForPocApproval($poc_id);

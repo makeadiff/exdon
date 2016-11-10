@@ -1,6 +1,7 @@
 <?php
 class Donation extends DBTable {
 	public $error;
+	public $start_date = '2016-10-01';
 
 	private $status_order = array('TO_BE_APPROVED_BY_POC', 'HAND_OVER_TO_FC_PENDING', 'DEPOSIT_PENDING', 'DEPOSIT COMPLETE');
 
@@ -171,6 +172,11 @@ class Donation extends DBTable {
 		return $this->search(array('fc_id' => $fc_id, 'status' => 'DEPOSIT_PENDING'));
 	}
 
+	/// Get all the donations donuted by the given user
+	function getDonationsByUser($user_id) {
+		return $this->search(array('fundraiser_id' => $user_id));
+	}
+
 
 
 	/**
@@ -281,10 +287,10 @@ class Donation extends DBTable {
 
 		if(!in_array($donation_id, $donation_ids_for_rejection)) $this->_error("User $rejecter_id can't approve the donation $donation_id");
 
-		$this->updateDonation($donation_id, $approver_id, array('donation_status' => 'TO_BE_APPROVED_BY_POC'));
+		$this->updateDonation($donation_id, $rejecter_id, array('donation_status' => 'TO_BE_APPROVED_BY_POC'));
 	}
 
-
+	/// Approve the given donation using the FC account.
 	function fcApprove($donation_id, $approver_id) {
 		$donations_for_approval = $this->search(array('fc_id' => $approver_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
 		$donation_ids_for_approval = array_keys($donations_for_approval);
@@ -309,10 +315,10 @@ class Donation extends DBTable {
 	function remove($donation_id, $deleter_id) {
 		global $sql;
 
-		$donations_for_rejection = $this->search(array('poc_id' => $deleter_id));
-		$donation_ids_for_rejection = array_keys($donations_for_rejection); 
+		$donations_for_deletion = $this->search(array('poc_id' => $deleter_id));
+		$donation_ids_for_deletion = array_keys($donations_for_deletion); 
 
-		if(!in_array($donation_id, $donation_ids_for_rejection)) $this->_error("User $deleter_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_deletion)) $this->_error("User $deleter_id can't approve the donation $donation_id");
 
 		$sql->execQuery("INSERT INTO deleted_donations 
 				(id,donation_type,version,fundraiser_id,donour_id,donation_status,eighty_g_required,product_id,donation_amount,created_at,updated_at,updated_by,source_id)
@@ -347,6 +353,25 @@ class Donation extends DBTable {
 		}
 
 		return true;
+	}
+
+	function getTotalDonations($user_data) {
+		global $sql;
+		$user_id = 0;
+		$total = 0;
+
+		if(isset($user_data['id'])) $user_id = $user_data['id'];
+		elseif(isset($user_data['user_id'])) $user_id = $user_data['user_id'];
+		elseif(isset($user_data['email'])) {
+			$user_id = $sql->getOne("SELECT id FROM users WHERE email='{$user_data['email']}' AND is_deleted='0'");
+		} elseif(isset($user_data['phone'])) {
+			$user_id = $sql->getOne("SELECT id FROM users WHERE phone_no='{$user_data['phone']}' AND is_deleted='0'");
+		}
+		
+		$donuted_amount = $sql->getOne("SELECT SUM(donation_amount) FROM donations WHERE fundraiser_id=$user_id AND created_at>'$this->start_date 00:00:00'");
+		$exdon_amount = $sql->getOne("SELECT SUM(amount) FROM external_donations WHERE fundraiser_id=$user_id AND created_at>'$this->start_date 00:00:00'");
+
+		return $donuted_amount + $exdon_amount;
 	}
 
 	function checkIfDonorDetailsSameAsVolunteerBelowXAmount($donor_email,$donor_phone,$fundraiser_id) {
@@ -395,16 +420,4 @@ class Donation extends DBTable {
 		}
 	}
 
-
-
-
 }
-
-/**
- * PocApprove
- * FcApprove
- * PocReject
- * FcReject
- * 
- */
-

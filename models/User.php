@@ -43,6 +43,10 @@ class User extends DBTable {
 		return $user;
 	}
 
+	function findByEmail($email) {
+		$this->find("email='$email' AND is_deleted='0'");
+	}
+
 	function getRoles($user_id = 0) {
 		global $sql;
 		$user_id = $this->getUserId($user_id);
