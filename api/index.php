@@ -123,38 +123,38 @@ $api->get('/donation/get_donations/{poc_id}/{status}', function ($poc_id, $statu
 
 $api->get('/donation/{donation_id}/poc_approve/{poc_id}', function ($donation_id, $poc_id) {
 	$donation = new Donation;
-	$donation->pocApprove($donation_id, $poc_id);
-
-	showSuccess("Donation approved", array('donation_id' => $donation_id));
+	if($donation->pocApprove($donation_id, $poc_id)) {
+		showSuccess("Donation approved", array('donation_id' => $donation_id));
+	} else showError($donation->error);
 });
 
 $api->get('/donation/{donation_id}/poc_reject/{poc_id}', function ($donation_id, $poc_id) {
 	$donation = new Donation;
-	$donation->pocReject($donation_id, $poc_id);
-
-	showSuccess("Donation rejected", array('donation_id' => $donation_id));
+	if($donation->pocReject($donation_id, $poc_id)) {
+		showSuccess("Donation rejected", array('donation_id' => $donation_id));
+	} else showError($donation->error);
 });
 
 
 $api->get('/donation/{donation_id}/fc_approve/{fc_id}', function ($donation_id, $fc_id) {
 	$donation = new Donation;
-	$donation->fcApprove($donation_id, $fc_id);
-
-	showSuccess("Donation approved", array('donation_id' => $donation_id));
+	if($donation->fcApprove($donation_id, $fc_id)) {
+		showSuccess("Donation approved", array('donation_id' => $donation_id));
+	} else showError($donation->error);
 });
 
 $api->get('/donation/{donation_id}/fc_reject/{fc_id}', function ($donation_id, $fc_id) {
 	$donation = new Donation;
-	$donation->fcReject($donation_id, $fc_id);
-
-	showSuccess("Donation rejected", array('donation_id' => $donation_id));
+	if($donation->fcReject($donation_id, $fc_id)) {
+		showSuccess("Donation rejected", array('donation_id' => $donation_id));
+	} else showError($donation->error);
 });
 
-$api->get('/donation/{donation_id}/delete/{poc_id}', function ($donation_id, $poc_id) {
+$api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
 	$donation = new Donation;
-	$donation->remove($donation_id, $poc_id);
-
-	showSuccess("Donation deleted", array('donation_id' => $donation_id));
+	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
+		showSuccess("Donation deleted", array('donation_id' => $donation_id));
+	} else showError($donation->error);
 });
 
 $api->request("/user/login", function () {

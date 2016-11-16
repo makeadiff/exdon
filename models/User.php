@@ -20,9 +20,9 @@ class User extends DBTable {
 		global $sql;
 
 		$user = $sql->getAssoc("SELECT id,email,phone_no AS phone, CONCAT(first_name, ' ', last_name) AS name, city_id, madapp_user_id, group_id,encrypted_password FROM `users` U 
-									WHERE phone_no='$phone' AND is_deleted='0'");
+									WHERE (email='$phone' OR phone_no='$phone') AND is_deleted='0'");
 		if(!$user) {
-			$this->error = "Can't find any user with the given phone number.";
+			$this->error = "Can't find any user with the given phone number/email.";
 			return false;
 		}
 

@@ -177,8 +177,6 @@ class Donation extends DBTable {
 		return $this->search(array('fundraiser_id' => $user_id));
 	}
 
-
-
 	/**
 	 * Search for donations with any of the following parameters...
 	 * 		- poc_id 	Find donations from the volunteers under this user id. 
@@ -250,11 +248,16 @@ class Donation extends DBTable {
 		// 	$sql_checks[''] = " = " . $params[''];
 		// }
 		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
-				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name
+				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
+				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name
 			FROM donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
+			INNER JOIN reports_tos RT ON RT.user_id=U.id
+			INNER JOIN users POC ON POC.id=RT.manager_id
+			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
 			INNER JOIN donours DON ON DON.id=D.donour_id
-			WHERE " . implode($sql_checks, ' AND '));
+			WHERE " . implode($sql_checks, ' AND ') . "
+			GROUP BY D.id");
 
 		return $donations;
 	}
@@ -273,63 +276,73 @@ class Donation extends DBTable {
 	/// Set the given donation as approved - with the user id(second argument) as the approver.
 	function pocApprove($donation_id, $approver_id) {
 		$donations_for_approval = $this->search(array('poc_id' => $approver_id, 'status' => 'TO_BE_APPROVED_BY_POC'));
+		if(!count($donations_for_approval)) return $this->_error("Can't find any donations that can be approved by current user($approver_id)");
 		$donation_ids_for_approval = array_keys($donations_for_approval);
 
-		if(!in_array($donation_id, $donation_ids_for_approval)) $this->_error("User $approver_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_approval)) return $this->_error("User $approver_id can't approve the donation $donation_id");
 
 		$this->updateDonation($donation_id, $approver_id, array('donation_status' => 'HAND_OVER_TO_FC_PENDING'));
+		return true;
 	}
 
 	/// Set the given donation as NOT approved - with the user id(second argument) as the rejecter.
 	function pocReject($donation_id, $rejecter_id) {
 		$donations_for_rejection = $this->search(array('poc_id' => $rejecter_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
+		if(!count($donations_for_rejection)) return $this->_error("Can't find any donations that can be recected by current user($rejecter_id)");
 		$donation_ids_for_rejection = array_keys($donations_for_rejection);
 
-		if(!in_array($donation_id, $donation_ids_for_rejection)) $this->_error("User $rejecter_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_rejection)) return $this->_error("User $rejecter_id can't approve the donation $donation_id");
 
 		$this->updateDonation($donation_id, $rejecter_id, array('donation_status' => 'TO_BE_APPROVED_BY_POC'));
+		return true;
 	}
 
 	/// Approve the given donation using the FC account.
 	function fcApprove($donation_id, $approver_id) {
 		$donations_for_approval = $this->search(array('fc_id' => $approver_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
+		if(!count($donations_for_approval)) return $this->_error("Can't find any donations that can be approved by current user($approver_id)");
 		$donation_ids_for_approval = array_keys($donations_for_approval);
 
-		if(!in_array($donation_id, $donation_ids_for_approval)) $this->_error("User $approver_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_approval)) return $this->_error("User $approver_id can't approve the donation $donation_id");
 
 		$this->updateDonation($donation_id, $approver_id, array('donation_status' => 'DEPOSIT_PENDING'));
+		return true;
 	}
 
 	/// Set the given donation as NOT approved - with the user id(second argument) as the rejecter.
 	function fcReject($donation_id, $rejecter_id) {
 		$donations_for_rejection = $this->search(array('fc_id' => $rejecter_id, 'status' => 'DEPOSIT_PENDING'));
+		if(!count($donations_for_rejection)) return $this->_error("Can't find any donations that can be recected by current user($rejecter_id)");
 		$donation_ids_for_rejection = array_keys($donations_for_rejection);
 
-		if(!in_array($donation_id, $donation_ids_for_rejection)) $this->_error("User $rejecter_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_rejection)) return $this->_error("User $rejecter_id can't approve the donation $donation_id");
 
-		$this->updateDonation($donation_id, $approver_id, array('donation_status' => 'HAND_OVER_TO_FC_PENDING'));
+		$this->updateDonation($donation_id, $rejecter_id, array('donation_status' => 'HAND_OVER_TO_FC_PENDING'));
+		return true;
 	}
 
-
 	/// Delete the donation of which id is given.
-	function remove($donation_id, $deleter_id) {
+	function remove($donation_id, $deleter_id, $fc_poc = 'poc') {
 		global $sql;
 
-		$donations_for_deletion = $this->search(array('poc_id' => $deleter_id));
+		$donations_for_deletion = $this->search(array($fc_poc . '_id' => $deleter_id));
+		if(!count($donations_for_deletion) or !$donations_for_deletion) return $this->_error("Can't find any donations that can be deleted by '$deleter_id'");
+
 		$donation_ids_for_deletion = array_keys($donations_for_deletion); 
 
-		if(!in_array($donation_id, $donation_ids_for_deletion)) $this->_error("User $deleter_id can't approve the donation $donation_id");
+		if(!in_array($donation_id, $donation_ids_for_deletion)) return $this->_error("User $deleter_id can't delete the donation $donation_id");
 
 		$sql->execQuery("INSERT INTO deleted_donations 
 				(id,donation_type,version,fundraiser_id,donour_id,donation_status,eighty_g_required,product_id,donation_amount,created_at,updated_at,updated_by,source_id)
-		SELECT 	 id,donation_type,version,fundraiser_id,donour_id,donation_status,eighty_g_required,product_id,donation_amount,created_at,updated_at,updated_by,source_id
+		SELECT 	 id,donation_type,version,fundraiser_id,donour_id,donation_status,eighty_g_required,product_id,donation_amount,created_at,updated_at,$deleter_id,source_id
 			FROM donations WHERE id=$donation_id"); // Get a copy of the donation as backup
-		$sql->execQuery("DELETE FROM donations WHERE id=$donation_id"); // Delete the donation.
+		return $sql->execQuery("DELETE FROM donations WHERE id=$donation_id"); // Delete the donation.
 	}
 
 	/// Use this to handle errors.
 	private function _error($message) {
 		$this->error = $message;
+		// print json_encode(array('error' => $message, 'success' => false));
 		return false;
 	}
 
