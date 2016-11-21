@@ -174,7 +174,7 @@ class Donation extends DBTable {
 
 	/// Get all the donations donuted by the given user
 	function getDonationsByUser($user_id) {
-		return $this->search(array('fundraiser_id' => $user_id));
+		return $this->search(array('fundraiser_id' => $user_id, 'include_external_donations' => true));
 	}
 
 	/**
@@ -249,7 +249,7 @@ class Donation extends DBTable {
 		// }
 		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
 				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
-				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name
+				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
 			FROM donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
 			INNER JOIN reports_tos RT ON RT.user_id=U.id
@@ -258,6 +258,25 @@ class Donation extends DBTable {
 			INNER JOIN donours DON ON DON.id=D.donour_id
 			WHERE " . implode($sql_checks, ' AND ') . "
 			GROUP BY D.id");
+
+		// Include external donation details in the return.
+		if(isset($params['include_external_donations']) and $params['include_external_donations']) {
+			if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.amount = " . $params['amount']; // Different field name for amount.
+
+			$external_donations = $sql->getById("SELECT CONCAT('Ex:',D.id) AS id, D.donation_status, '0' AS eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.amount,
+				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
+				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
+			FROM external_donations D 
+			INNER JOIN users U ON D.fundraiser_id=U.id
+			INNER JOIN reports_tos RT ON RT.user_id=U.id
+			INNER JOIN users POC ON POC.id=RT.manager_id
+			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
+			INNER JOIN donours DON ON DON.id=D.donor_id
+			WHERE " . implode($sql_checks, ' AND ') . "
+			GROUP BY D.id");
+
+			$donations = array_merge($donations, $external_donations);
+		}
 
 		return $donations;
 	}

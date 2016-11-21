@@ -19,7 +19,8 @@ class User extends DBTable {
 	function login($phone, $password) {
 		global $sql;
 
-		$user = $sql->getAssoc("SELECT id,email,phone_no AS phone, CONCAT(first_name, ' ', last_name) AS name, city_id, madapp_user_id, group_id,encrypted_password FROM `users` U 
+		$user = $sql->getAssoc("SELECT id,email,phone_no AS phone, CONCAT(first_name, ' ', last_name) AS name, city_id, madapp_user_id, group_id,encrypted_password 
+									FROM `users` U 
 									WHERE (email='$phone' OR phone_no='$phone') AND is_deleted='0'");
 		if(!$user) {
 			$this->error = "Can't find any user with the given phone number/email.";
@@ -34,7 +35,7 @@ class User extends DBTable {
 		unset($user['encrypted_password']);
 
 		if(!$this->hasRole(10, $user['id'])) {
-			$this->error = "POC not assigned.";
+			$this->error = "POC/Coach not assigned.";
 			return false;	
 		}
 
