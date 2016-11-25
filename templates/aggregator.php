@@ -1,3 +1,5 @@
+<h1 class="title">Deposit Aggregator</h1>
+
 <form action="" method="get" class="form-area">
 <?php
 $html->buildInput("city_id", 'City', 'select', $city_id, array('options' => $all_cities));
@@ -12,12 +14,17 @@ var coaches = <?php echo json_encode($coaches); ?>;
 </script>
 
 <table class="table table-striped">
-<tr><th>Type</th><th>Amount</th><th>Deposited</th><th>3 Week Late</th><th>Donor</th><th>Fundraiser</th><th>Status</th></tr>
+<tr><th>Type</th><th>Amount</th><th>Deposited</th>
+	<th>2 Week Late</th><th>3 Week Late</th><th>4+ Week Late</th>
+	<th>Donor</th><th>Fundraiser</th><th>Donuted On</th><th>Status</th></tr>
 <tr>
-	<td>Total</td>
+	<td><strong>Total</strong></td>
 	<td><?php echo money_format("%n", $total_amount) ?></td>
 	<td><?php echo money_format("%n", $total_deposited) ?></td>
-	<td><?php echo money_format("%n", $total_late) ?></td>
+	<td><?php echo money_format("%n", $total_late_2_weeks) ?></td>
+	<td><?php echo money_format("%n", $total_late_3_weeks) ?></td>
+	<td><?php echo money_format("%n", $total_late_4_or_more_weeks) ?></td>
+	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -27,9 +34,12 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td><?php echo i($all_donation_types, $don['donation_type'], $don['donation_type']) ?></td>
 	<td><?php echo money_format("%n", $don['donation_amount']) ?></td>
 	<td><?php echo money_format("%n", $don['amount_deposited']) ?></td>
-	<td><?php echo money_format("%n", $don['amount_late']) ?></td>
+	<td><?php echo money_format("%n", $don['amount_late_2_weeks']) ?></td>
+	<td><?php echo money_format("%n", $don['amount_late_3_weeks']) ?></td>
+	<td><?php echo money_format("%n", $don['amount_late_4_or_more_weeks']) ?></td>
 	<td><?php echo $don['donor_name'] ?></td>
 	<td><?php echo $don['fundraiser_name'] ?></td>
+	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
 	<td><?php echo $don['donation_status'] ?></td>
 </tr>
 <?php } ?>

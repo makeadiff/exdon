@@ -51,7 +51,7 @@ class Donation extends DBTable {
 				'created_at'		=> $created_at,
 				'updated_at'		=> 'NOW()',
 				'eighty_g_required'	=> ($eighty_g_required) ? 1 : 0,
-				'comment'		=> $comment,
+				'comment'			=> $comment,
 				'donation_status'	=> 'TO_BE_APPROVED_BY_POC',
 				'source_id'			=> 1,
 
@@ -148,9 +148,7 @@ class Donation extends DBTable {
 		return $donor_id;
 	}
 	// :TODO: 
-	// DONE  - A Search Donation intferface. With POC option, and status option right now. Later we'll add other thing like amount, fundraiser, date range, etc.
 	// Create a API in full from for donut option. Perhabs this can wait till the refactoring. *Hope it happens*
-	// 
 
 	/// Get all the donations that were made - but not approved yet - buy the volunteers under the given user(POC).
 	function getDonationsForPocApproval($poc_id) {
@@ -377,10 +375,12 @@ class Donation extends DBTable {
 		if(!$fundraiser_id) return $this->_error("Can't find a valid Fundraiser ID for this donation. Try logging out of the app and logging back in again.");
 
 		if($this->checkIfDonorDetailsSameAsVolunteerBelowXAmount($donor_email,$donor_phone,$fundraiser_id)) {
-			return $this->_error("You seem to have entered your own details in place of the donor. If you continue, the donor won't receive the acknowledgement or receipt. Are you sure you want to continue?");
-		}elseif ($created_date = $this->checkIfRepeatDonation($donor_id,$fundraiser_id,$amount)) {
+			return $this->_error("You seem to have entered your own details in place of the donor. If you continue, the donor won't receive the acknowledgement or receipt. You can only make two donations under your own details. You sure you want to continue?");
+
+		} elseif ($created_date = $this->checkIfRepeatDonation($donor_id,$fundraiser_id,$amount)) { // = is used for assignment. It should NOT be ==
 			return $this->_error("Donation of Rs. $amount from $donor_name has already been added on $created_date. Are you sure you want to add the same amount again?");
-		}elseif($data = $this->checkIfRepeatDonationWithDifferentAmount($donor_id,$fundraiser_id)) {
+
+		} elseif($data = $this->checkIfRepeatDonationWithDifferentAmount($donor_id,$fundraiser_id)) {
 			return $this->_error("Donation of Rs. $data[amount] from $donor_name has already been added on $data[created_date]. Are you sure you want to add another amount again?");
 		}
 

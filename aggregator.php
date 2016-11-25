@@ -11,11 +11,11 @@ $donation_type = i($QUERY,'donation_type', 'any');
 $checks = array('1'	=> '1');
 if($city_id) $checks[] 	= "U.city_id=$city_id";
 if($coach_id) $checks[]	= "R.manager_id = $coach_id";
-if($donation_status != 'any')	{
-	if($donation_status == 'DEPOSIT COMPLETE')
-		$checks[] = "(D.donation_status = '$donation_status' OR D.donation_status = 'RECEIPT SENT')";
+if($donation_status != 'any') {
+	if($donation_status == 'DEPOSIT_PENDING')
+		$checks[] = "(D.donation_status = 'DEPOSIT_PENDING' OR D.donation_status = 'DEPOSIT COMPLETE' OR D.donation_status = 'RECEIPT SENT')";
 	else 
-		$checks[] = "(D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT')";
+		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT')";
 }
 if($donation_type != 'any' and $donation_type != 'donut')		$checks[] = "D.donation_type = '$donation_type'";
 
@@ -39,6 +39,7 @@ foreach ($all_coaches as $this_coach_id => $coach_data) {
 	if(!isset($coaches[$coach_data['city_id']])) $coaches[$coach_data['city_id']] = array('Any');
 	$coaches[$coach_data['city_id']][$this_coach_id] = $coach_data['name'];
 }
+$coaches[0] = array("Any");
 
 // Init
 setlocale(LC_MONETARY, 'en_IN');
@@ -66,12 +67,18 @@ $all_donations = array_merge($external, $donut);
 $total_amount = 0;
 $total_deposited = 0;
 $total_late = 0;
+$total_late_2_weeks = 0;
+$total_late_3_weeks = 0;
+$total_late_4_or_more_weeks = 0;
 foreach ($all_donations as $i => $don) {
 	$all_donations[$i]['amount_deposited'] = 0;
-	$all_donations[$i]['amount_late'] = 0;
+	$all_donations[$i]['amount_late_2_weeks'] = 0;
+	$all_donations[$i]['amount_late_3_weeks'] = 0;
+	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
 	
 	// Deposited donations.
-	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT') {
+	if($don['donation_type'] != 'donut' or 
+			($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING')) {
 		$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
 		$total_deposited += $don['donation_amount'];
 	
@@ -80,10 +87,18 @@ foreach ($all_donations as $i => $don) {
 		$datetime1 = new DateTime($don['created_at']);
 		$datetime2 = new DateTime(date("Y-m-d H:i:s"));
 		$interval = $datetime1->diff($datetime2);
-		if($interval->format("%a") > 21) {
-			$all_donations[$i]['amount_late'] = $don['donation_amount'];
-			$total_late += $don['donation_amount'];
+
+		if($interval->format("%a") > 28) {
+			$all_donations[$i]['amount_late_4_or_more_weeks'] = $don['donation_amount'];
+			$total_late_4_or_more_weeks += $don['donation_amount'];
+		} else if($interval->format("%a") > 21) {
+			$all_donations[$i]['amount_late_3_weeks'] = $don['donation_amount'];
+			$total_late_3_weeks += $don['donation_amount'];
+		} else if($interval->format("%a") > 14) {
+			$all_donations[$i]['amount_late_2_weeks'] = $don['donation_amount'];
+			$total_late_2_weeks += $don['donation_amount'];
 		}
+		$total_late += $don['donation_amount'];
 	}
 
 	$total_amount += $don['donation_amount'];
@@ -96,14 +111,14 @@ $all_donation_types = array(
 		'online'		=> 'Online',
 		'nach' 			=> 'NACH',
 		'global_giving'	=> 'Global Giving',
-		'mad_website'		=> 'MAD Website',
+		'mad_website'	=> 'MAD Website',
 		'give_india' 	=> 'Give India',
 		'other'			=> "Other",
 		'any'			=> 'Any'
 	);
 $all_donation_status = array(
 		'TO_BE_APPROVED_BY_POC'	=> 'Not Deposited',
-		'DEPOSIT COMPLETE'		=> 'Deposited',
+		'DEPOSIT_PENDING'		=> 'Deposited', // Was 'DEPOSIT COMPLETE'
 		'any'					=> 'Any'
 	);
 
@@ -113,4 +128,5 @@ $html = new HTML;
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/ui/minified/jquery-ui.min.js'), 'js', true);
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/themes/base/minified/jquery-ui.min.css'), 'css', true);
 
+$page_title = 'Deposite Aggregator';
 render();
