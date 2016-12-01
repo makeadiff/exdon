@@ -64,7 +64,7 @@ $api->get('/donation/get_donations_for_poc_approval/{poc_id}', function ($poc_id
 		showSuccess(count($donations_for_approval) . " donation(s) waiting for approval", array('donations' => $donations_for_approval));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations that need approval for this user";
+		if(!$error) $error = "No donations to be collected.";
 		showError($error);
 	}
 });
@@ -77,7 +77,7 @@ $api->get('/donation/get_donations_for_fc_approval/{poc_id}', function ($poc_id)
 		showSuccess(count($donations_for_approval) . " donation(s) waiting for approval", array('donations' => $donations_for_approval));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations that need approval for this user";
+		if(!$error) $error = "No donations to be deposited.";
 		showError($error);
 	}
 });
@@ -90,7 +90,7 @@ $api->get('/donation/get_poc_approved_donations/{poc_id}', function ($poc_id) {
 		showSuccess(count($approved_donations) . " approved donation(s).", array('donations' => $approved_donations));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations that's approved.";
+		if(!$error) $error = "Can't find any donations that's collected.";
 		showError($error);
 	}
 });
@@ -103,7 +103,7 @@ $api->get('/donation/get_fc_approved_donations/{fc_id}', function ($fc_id) {
 		showSuccess(count($approved_donations) . " approved donation(s).", array('donations' => $approved_donations));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations that's approved.";
+		if(!$error) $error = "Can't find any donations that's deposited.";
 		showError($error);
 	}
 });
