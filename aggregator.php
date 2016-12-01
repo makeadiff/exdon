@@ -12,10 +12,12 @@ $checks = array('1'	=> '1');
 if($city_id) $checks[] 	= "U.city_id=$city_id";
 if($coach_id) $checks[]	= "R.manager_id = $coach_id";
 if($donation_status != 'any') {
-	if($donation_status == 'DEPOSIT_PENDING')
+	if($donation_status == 'DEPOSITED')
 		$checks[] = "(D.donation_status = 'DEPOSIT_PENDING' OR D.donation_status = 'DEPOSIT COMPLETE' OR D.donation_status = 'RECEIPT SENT')";
-	else 
+	else if($donation_status == 'NOT_DEPOSITED')
 		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT')";
+	else 
+		$checks[] = "D.donation_status = '$donation_status'";
 }
 if($donation_type != 'any' and $donation_type != 'donut')		$checks[] = "D.donation_type = '$donation_type'";
 
@@ -67,11 +69,13 @@ $all_donations = array_merge($external, $donut);
 $total_amount = 0;
 $total_deposited = 0;
 $total_late = 0;
+$total_late_1_weeks = 0;
 $total_late_2_weeks = 0;
 $total_late_3_weeks = 0;
 $total_late_4_or_more_weeks = 0;
 foreach ($all_donations as $i => $don) {
 	$all_donations[$i]['amount_deposited'] = 0;
+	$all_donations[$i]['amount_late_1_weeks'] = 0;
 	$all_donations[$i]['amount_late_2_weeks'] = 0;
 	$all_donations[$i]['amount_late_3_weeks'] = 0;
 	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
@@ -97,6 +101,9 @@ foreach ($all_donations as $i => $don) {
 		} else if($interval->format("%a") > 14) {
 			$all_donations[$i]['amount_late_2_weeks'] = $don['donation_amount'];
 			$total_late_2_weeks += $don['donation_amount'];
+		} else if($interval->format("%a") > 7) {
+			$all_donations[$i]['amount_late_1_weeks'] = $don['donation_amount'];
+			$total_late_1_weeks += $don['donation_amount'];
 		}
 		$total_late += $don['donation_amount'];
 	}
@@ -117,9 +124,13 @@ $all_donation_types = array(
 		'any'			=> 'Any'
 	);
 $all_donation_status = array(
-		'TO_BE_APPROVED_BY_POC'	=> 'Not Deposited',
-		'DEPOSIT_PENDING'		=> 'Deposited', // Was 'DEPOSIT COMPLETE'
-		'any'					=> 'Any'
+		'DEPOSITED'				=> 'Not Deposited',
+		'NOT_DEPOSITED'			=> 'Deposited',
+		'TO_BE_APPROVED_BY_POC'	=> 'With Volunteer',
+		'HAND_OVER_TO_FC_PENDING'=>'With Coach',
+		'DEPOSIT_PENDING'		=> 'In National Account(Unapproved)',
+		'DEPOSIT COMPLETE'		=> 'In National Account(Approved)',
+		'any'					=> 'Any',
 	);
 
 $html = new HTML;
