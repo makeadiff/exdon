@@ -36,9 +36,14 @@ class User extends DBTable {
 			unset($user['encrypted_password']);
 		}
 
-		if(!$this->hasRole(10, $user['id'])) {
-			$this->error = "POC/Coach not assigned.";
-			return false;	
+		$user['coach_assigned'] = false;
+		if($this->hasRole(10, $user['id'])) {
+			$user['coach_assigned'] = $sql->getAssoc("SELECT U.id, U.first_name, U.phone_no
+						FROM users U 
+						INNER JOIN user_role_maps URM ON URM.user_id=U.id 
+						INNER JOIN roles R ON URM.role_id=R.id 
+						INNER JOIN reports_tos RT ON RT.manager_id=U.id 
+						WHERE RT.user_id=$user[id] AND R.role='CFR POC'");
 		}
 
 		$this->user = $user;
