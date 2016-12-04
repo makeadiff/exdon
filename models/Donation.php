@@ -167,7 +167,7 @@ class Donation extends DBTable {
 
 	/// Get all the approved donations buy the volunteers under the given user(FC).
 	function getFcApprovedDonations($fc_id) {
-		return $this->search(array('fc_id' => $fc_id, 'status' => 'DEPOSIT_PENDING'));
+		return $this->search(array('fc_id' => $fc_id, 'status_in' => array('DEPOSIT_PENDING', 'DEPOSIT COMPLETE', 'RECIPT PENDING', 'RECEIPT SENT')));
 	}
 
 	/// Get all the donations donuted by the given user
@@ -239,12 +239,16 @@ class Donation extends DBTable {
 		if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
 		if(isset($params['donor_id'])) $sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
 		if(isset($params['status'])) $sql_checks['status'] = "D.donation_status = '" . $params['status'] . "'";
+		if(isset($params['status_in'])) $sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
 		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
 		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
 
-		// if(isset($params[''])) {
-		// 	$sql_checks[''] = " = " . $params[''];
-		// }
+
+		// Only get donations after a preset date
+		include('../../donutleaderboard/_city_filter.php');
+		$from_date = $city_date_filter['25']['from']; // National start date
+		$sql_checks['from_date'] = "D.created_at >= '$from_date 00:00:00'";
+
 		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
 				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
 				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
@@ -255,7 +259,9 @@ class Donation extends DBTable {
 			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
 			INNER JOIN donours DON ON DON.id=D.donour_id
 			WHERE " . implode($sql_checks, ' AND ') . "
-			GROUP BY D.id");
+			GROUP BY D.id
+			ORDER BY D.created_at DESC");
+		// print($sql->_query);
 
 		// Include external donation details in the return.
 		if(isset($params['include_external_donations']) and $params['include_external_donations']) {
@@ -271,7 +277,8 @@ class Donation extends DBTable {
 			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
 			INNER JOIN donours DON ON DON.id=D.donor_id
 			WHERE " . implode($sql_checks, ' AND ') . "
-			GROUP BY D.id");
+			GROUP BY D.id
+			ORDER BY D.created_at DESC");
 
 			$donations = array_merge($donations, $external_donations);
 		}
