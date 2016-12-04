@@ -227,7 +227,7 @@ class Donation extends DBTable {
 			$user = new User($poc_id);
 
 			if(!$user->hasRole($user->role_ids['CFR POC'])) 
-				return $this->_error("User '{$user->user['name']}' is not a POC. Only POCs have approval option.");
+				return $this->_error("You are not a coach. Only coaches have approval option.");
 
 			$volunteers = $user->getSubordinates();
 			if(!$volunteers) return $this->_error("This user don't have any volunteers under them.");
@@ -242,7 +242,6 @@ class Donation extends DBTable {
 		if(isset($params['status_in'])) $sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
 		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
 		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
-
 
 		// Only get donations after a preset date
 		include('../../donutleaderboard/_city_filter.php');

@@ -173,6 +173,15 @@ $api->request("/user/login", function () {
 	showSuccess("Login successful", $return);
 });
 
+$api->request("/user/get_subordinates/{user_id}", function ($user_id) {
+	$user = new User;
+	$subordinates = $user->getSubordinates($user_id);
+
+	$return = array('subordinates' => $subordinates);
+
+	showSuccess("Login successful", $return);
+});
+
 $api->notFound(function() {
 	print "404";
 });
