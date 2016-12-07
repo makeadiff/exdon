@@ -81,8 +81,7 @@ foreach ($all_donations as $i => $don) {
 	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
 	
 	// Deposited donations.
-	if($don['donation_type'] != 'donut' or 
-			($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING')) {
+	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING') { // or $don['donation_type'] != 'donut'
 		$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
 		$total_deposited += $don['donation_amount'];
 	
