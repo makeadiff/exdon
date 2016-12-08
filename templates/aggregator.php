@@ -3,6 +3,8 @@
 <form action="" method="get" class="form-area">
 <?php
 $html->buildInput("city_id", 'City', 'select', $city_id, array('options' => $all_cities));
+$html->buildInput("vertical_id", 'Vertical', 'select', $vertical_id, array('options' => $all_verticals));
+$html->buildInput("group_type", 'Volunteer Type', 'select', $group_type, array('options' => $all_group_types));
 $html->buildInput("coach_id", 'Coach', 'select', $coach_id, array('options' => $coaches[$city_id]));
 $html->buildInput("donation_type", 'Type', 'select', $donation_type, array('options' => $all_donation_types));
 $html->buildInput("donation_status", 'Status', 'select', $donation_status, array('options' => $all_donation_status));

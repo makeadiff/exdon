@@ -1,11 +1,16 @@
 <?php
 require('common.php');
 
+$madapp_db = 'Project_Madapp';
+if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
+
 // Argument Parsing.
 $city_id = i($QUERY,'city_id', 44);
 $coach_id = i($QUERY,'coach_id', 0);
 $donation_status = i($QUERY,'donation_status', 'any');
 $donation_type = i($QUERY,'donation_type', 'any');
+$group_type = i($QUERY,'group_type', 'any');
+$vertical_id = i($QUERY,'vertical_id', '0');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -28,7 +33,23 @@ foreach ($city_date_filter as $this_city_id => $dates) {
 }
 $checks[] = "(" . implode(" OR ", $filter_array) . ")";
 
+// Madapp Checks
+$madapp_joins = array();
+if($group_type != 'any') {
+	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$checks[] = "MDG.type = '$group_type'";
+}
+if($vertical_id) {
+	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$checks[] = "MDG.vertical_id = '$vertical_id'";
+}
+$all_madapp_joins = implode("\n", array_values($madapp_joins));
 
+$all_group_types = array('national' => 'National', 'fellow' => 'Fellow', 'volunteer' => 'Volunteer', 'any' => 'Any');
+$all_verticals = $sql->getById("SELECT id,name FROM `$madapp_db`.Vertical WHERE id NOT IN (6,10,11,12,13,14,15,16) ");
+$all_verticals[0] = 'Any';
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 $all_cities[0] = 'Any';
 
@@ -55,6 +76,7 @@ if($donation_type != 'donut')
 		INNER JOIN users U ON U.id=D.fundraiser_id
 		INNER JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donor_id
+		$all_madapp_joins
 		WHERE " . implode(" AND ", $checks));
 if($donation_type == 'donut' or $donation_type == 'any')
 	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, 
@@ -63,6 +85,7 @@ if($donation_type == 'donut' or $donation_type == 'any')
 		INNER JOIN users U ON U.id=D.fundraiser_id
 		INNER JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donour_id
+		$all_madapp_joins
 		WHERE donation_type='GEN' AND " . implode(" AND ", $checks));
 $all_donations = array_merge($external, $donut);
 
@@ -129,6 +152,7 @@ $all_donation_status = array(
 		'HAND_OVER_TO_FC_PENDING'=>'With Coach',
 		'DEPOSIT_PENDING'		=> 'In National Account(Unapproved)',
 		'DEPOSIT COMPLETE'		=> 'In National Account(Approved)',
+		'RECEIPT PENDING'		=> 'In National Account(Unapproved)',
 		'any'					=> 'Any',
 	);
 
