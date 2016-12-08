@@ -5,7 +5,7 @@ $madapp_db = 'Project_Madapp';
 if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
 
 // Argument Parsing.
-$city_id = i($QUERY,'city_id', 44);
+$city_id = i($QUERY,'city_id', 0);
 $coach_id = i($QUERY,'coach_id', 0);
 $donation_status = i($QUERY,'donation_status', 'any');
 $donation_type = i($QUERY,'donation_type', 'any');
@@ -48,7 +48,7 @@ if($vertical_id) {
 $all_madapp_joins = implode("\n", array_values($madapp_joins));
 
 $all_group_types = array('national' => 'National', 'fellow' => 'Fellow', 'volunteer' => 'Volunteer', 'any' => 'Any');
-$all_verticals = $sql->getById("SELECT id,name FROM `$madapp_db`.Vertical WHERE id NOT IN (6,10,11,12,13,14,15,16) ");
+$all_verticals = $sql->getById("SELECT id,name FROM `$madapp_db`.Vertical WHERE id NOT IN (6,10,11,12,13,14,15,16)");
 $all_verticals[0] = 'Any';
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 $all_cities[0] = 'Any';
@@ -74,7 +74,7 @@ if($donation_type != 'donut')
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
-		INNER JOIN reports_tos R ON U.id=R.user_id
+		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donor_id
 		$all_madapp_joins
 		WHERE " . implode(" AND ", $checks));
@@ -83,7 +83,7 @@ if($donation_type == 'donut' or $donation_type == 'any')
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
-		INNER JOIN reports_tos R ON U.id=R.user_id
+		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donour_id
 		$all_madapp_joins
 		WHERE donation_type='GEN' AND " . implode(" AND ", $checks));
