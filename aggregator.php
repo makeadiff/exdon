@@ -11,6 +11,7 @@ $donation_status = i($QUERY,'donation_status', 'any');
 $donation_type = i($QUERY,'donation_type', 'any');
 $group_type = i($QUERY,'group_type', 'any');
 $vertical_id = i($QUERY,'vertical_id', '0');
+$format = i($QUERY, 'format', 'html');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -70,7 +71,7 @@ $external = array();
 $donut = array();
 
 if($donation_type != 'donut')
-	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, 
+	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email,
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
@@ -79,7 +80,7 @@ if($donation_type != 'donut')
 		$all_madapp_joins
 		WHERE " . implode(" AND ", $checks));
 if($donation_type == 'donut' or $donation_type == 'any')
-	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, 
+	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, 
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
@@ -163,4 +164,6 @@ $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/themes/base/minified/jquery-ui.min.css'), 'css', true);
 
 $page_title = 'Deposite Aggregator';
-render();
+
+if($format == 'csv') render('aggregator_csv.php', false);
+else render();
