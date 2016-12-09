@@ -1,5 +1,6 @@
 <?php
 class Donation extends DBTable {
+
 	public $error;
 	public $start_date = '2016-10-01';
 
@@ -406,6 +407,8 @@ class Donation extends DBTable {
 		} elseif(isset($user_data['phone'])) {
 			$user_id = $sql->getOne("SELECT id FROM users WHERE phone_no='{$user_data['phone']}' AND is_deleted='0'");
 		}
+
+		if(!$user_id) return "Cannot find user";
 		
 		$donuted_amount = $sql->getOne("SELECT SUM(donation_amount) FROM donations WHERE fundraiser_id=$user_id AND created_at>'$this->start_date 00:00:00'");
 		$exdon_amount = $sql->getOne("SELECT SUM(amount) FROM external_donations WHERE fundraiser_id=$user_id AND created_at>'$this->start_date 00:00:00'");
