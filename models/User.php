@@ -77,7 +77,7 @@ class User extends DBTable {
 		global $sql;
 		$user_id = $this->getUserId($user_id);
 
-		$subordinates = $sql->getById("SELECT U.id,CONCAT(U.first_name, ' ', U.last_name) AS name
+		$subordinates = $sql->getById("SELECT U.id, TRIM(CONCAT(U.first_name, ' ', U.last_name)) AS name
 			FROM users U
 			INNER JOIN reports_tos RT ON RT.user_id=U.id
 			WHERE RT.manager_id=$user_id AND U.is_deleted='0'");
@@ -90,7 +90,6 @@ class User extends DBTable {
 		if(!$user_id) $this->_error("No User ID provided.");
 		return $user_id;
 	}
-
 
 	function _error($message) {
 		die($message);

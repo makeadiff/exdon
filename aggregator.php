@@ -1,11 +1,17 @@
 <?php
 require('common.php');
 
+$madapp_db = 'Project_Madapp';
+if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
+
 // Argument Parsing.
-$city_id = i($QUERY,'city_id', 44);
+$city_id = i($QUERY,'city_id', 0);
 $coach_id = i($QUERY,'coach_id', 0);
 $donation_status = i($QUERY,'donation_status', 'any');
 $donation_type = i($QUERY,'donation_type', 'any');
+$group_type = i($QUERY,'group_type', 'any');
+$vertical_id = i($QUERY,'vertical_id', '0');
+$format = i($QUERY, 'format', 'html');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -28,7 +34,23 @@ foreach ($city_date_filter as $this_city_id => $dates) {
 }
 $checks[] = "(" . implode(" OR ", $filter_array) . ")";
 
+// Madapp Checks
+$madapp_joins = array();
+if($group_type != 'any') {
+	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$checks[] = "MDG.type = '$group_type'";
+}
+if($vertical_id) {
+	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$checks[] = "MDG.vertical_id = '$vertical_id'";
+}
+$all_madapp_joins = implode("\n", array_values($madapp_joins));
 
+$all_group_types = array('national' => 'National', 'fellow' => 'Fellow', 'volunteer' => 'Volunteer', 'any' => 'Any');
+$all_verticals = $sql->getById("SELECT id,name FROM `$madapp_db`.Vertical WHERE id NOT IN (6,10,11,12,13,14,15,16)");
+$all_verticals[0] = 'Any';
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
 $all_cities[0] = 'Any';
 
@@ -49,20 +71,22 @@ $external = array();
 $donut = array();
 
 if($donation_type != 'donut')
-	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, 
+	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email,
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
-		INNER JOIN reports_tos R ON U.id=R.user_id
+		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donor_id
+		$all_madapp_joins
 		WHERE " . implode(" AND ", $checks));
 if($donation_type == 'donut' or $donation_type == 'any')
-	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, 
+	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, 
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
-		INNER JOIN reports_tos R ON U.id=R.user_id
+		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donour_id
+		$all_madapp_joins
 		WHERE donation_type='GEN' AND " . implode(" AND ", $checks));
 $all_donations = array_merge($external, $donut);
 
@@ -81,8 +105,7 @@ foreach ($all_donations as $i => $don) {
 	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
 	
 	// Deposited donations.
-	if($don['donation_type'] != 'donut' or 
-			($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING')) {
+	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING') { // or $don['donation_type'] != 'donut'
 		$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
 		$total_deposited += $don['donation_amount'];
 	
@@ -130,6 +153,7 @@ $all_donation_status = array(
 		'HAND_OVER_TO_FC_PENDING'=>'With Coach',
 		'DEPOSIT_PENDING'		=> 'In National Account(Unapproved)',
 		'DEPOSIT COMPLETE'		=> 'In National Account(Approved)',
+		'RECEIPT PENDING'		=> 'In National Account(Unapproved)',
 		'any'					=> 'Any',
 	);
 
@@ -140,4 +164,6 @@ $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui
 $template->addResource(joinPath($config['site_url'], 'bower_components/jquery-ui/themes/base/minified/jquery-ui.min.css'), 'css', true);
 
 $page_title = 'Deposite Aggregator';
-render();
+
+if($format == 'csv') render('aggregator_csv.php', false);
+else render();
