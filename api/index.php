@@ -56,6 +56,18 @@ $api->get('/donation/get_total_donation_by_email/{user_email}', function($user_e
 	showSuccess("Donation Amount: $total", array('total' => $total));
 });
 
+$api->get('/donation/get_total_donation_by_email_for_fraise/{user_email}', function($user_email) {
+	$donation = new Donation;
+	$total = $donation->getTotalDonations(array('email' => $user_email));
+
+	if($total) {
+		print $total;
+	}else{
+		print "0";
+	}
+
+});
+
 $api->get('/donation/get_donations_for_poc_approval/{poc_id}', function ($poc_id) {
 	$donation = new Donation;
 	$donations_for_approval = $donation->getDonationsForPocApproval($poc_id);
