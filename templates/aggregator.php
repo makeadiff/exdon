@@ -7,7 +7,23 @@ $html->buildInput("vertical_id", 'Vertical', 'select', $vertical_id, array('opti
 $html->buildInput("group_type", 'Volunteer Type', 'select', $group_type, array('options' => $all_group_types));
 $html->buildInput("coach_id", 'Coach', 'select', $coach_id, array('options' => $coaches[$city_id]));
 $html->buildInput("donation_type", 'Type', 'select', $donation_type, array('options' => $all_donation_types));
-$html->buildInput("donation_status", 'Status', 'select', $donation_status, array('options' => $all_donation_status));
+// $html->buildInput("donation_status", 'Status', 'select', $donation_status, array('options' => $all_donation_status));
+?>
+<label for="donation_status">Status</label>
+<select name="donation_status" id="donation_status">
+	<optgroup label="Aggregated">
+		<option value="any" <?php if($donation_status == 'any') echo 'selected'; ?>>Any</option>
+		<option value="DEPOSITED" <?php if($donation_status == 'DEPOSITED') echo 'selected'; ?>>Not Deposited</option>
+		<option value="NOT_DEPOSITED" <?php if($donation_status == 'NOT_DEPOSITED') echo 'selected'; ?>>Deposited</option>
+	</optgroup>
+	<optgroup label="Seperate">
+		<option value="TO_BE_APPROVED_BY_POC" <?php if($donation_status == 'TO_BE_APPROVED_BY_POC') echo 'selected'; ?>>With Volunteer</option>
+		<option value="HAND_OVER_TO_FC_PENDING" <?php if($donation_status == 'HAND_OVER_TO_FC_PENDING') echo 'selected'; ?>>With Coach</option>
+		<option value="DEPOSIT_PENDING" <?php if($donation_status == 'DEPOSIT_PENDING') echo 'selected'; ?>>In National Account(Unapproved)</option>
+		<option value="DEPOSIT COMPLETE" <?php if($donation_status == 'DEPOSIT COMPLETE') echo 'selected'; ?>>In National Account(Approved)</option>
+	</optgroup>
+</select><br />
+<?php
 $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn btn-primary'));
 ?>
 </form><br /><br />

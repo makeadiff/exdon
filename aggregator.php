@@ -5,13 +5,13 @@ $madapp_db = 'Project_Madapp';
 if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
 
 // Argument Parsing.
-$city_id = i($QUERY,'city_id', 0);
-$coach_id = i($QUERY,'coach_id', 0);
-$donation_status = i($QUERY,'donation_status', 'any');
-$donation_type = i($QUERY,'donation_type', 'any');
-$group_type = i($QUERY,'group_type', 'any');
-$vertical_id = i($QUERY,'vertical_id', '0');
-$format = i($QUERY, 'format', 'html');
+$city_id 		= i($QUERY,'city_id', 0);
+$coach_id 		= i($QUERY,'coach_id', 0);
+$donation_status= i($QUERY,'donation_status', 'any');
+$donation_type 	= i($QUERY,'donation_type', 'any');
+$group_type 	= i($QUERY,'group_type', 'any');
+$vertical_id	= i($QUERY,'vertical_id', '0');
+$format 		= i($QUERY, 'format', 'html');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -147,6 +147,7 @@ $all_donation_types = array(
 		'any'			=> 'Any'
 	);
 $all_donation_status = array(
+		'any'					=> 'Any',
 		'DEPOSITED'				=> 'Not Deposited',
 		'NOT_DEPOSITED'			=> 'Deposited',
 		'TO_BE_APPROVED_BY_POC'	=> 'With Volunteer',
@@ -154,7 +155,7 @@ $all_donation_status = array(
 		'DEPOSIT_PENDING'		=> 'In National Account(Unapproved)',
 		'DEPOSIT COMPLETE'		=> 'In National Account(Approved)',
 		'RECEIPT PENDING'		=> 'In National Account(Unapproved)',
-		'any'					=> 'Any',
+		'RECEIPT SENT'			=> 'In National Account(Approved)',
 	);
 
 $html = new HTML;
