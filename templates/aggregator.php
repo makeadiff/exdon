@@ -32,35 +32,45 @@ var coaches = <?php echo json_encode($coaches); ?>;
 </script>
 
 <table class="table table-striped">
-<tr><th>Type</th><th>Donuted Amount</th><th>Deposited</th>
+<tr><th>Fundraiser</th<th>Donor</th>><th>Type</th><th>Donuted Amount</th><th>Status</th><th>Donuted On</th><th>Deposited</th>
 	<th>1 Week Late</th><th>2 Week Late</th><th>3 Week Late</th><th>4+ Week Late</th>
-	<th>Donor</th><th>Fundraiser</th><th>Donuted On</th><th>Status</th></tr>
+	</tr>
 <tr>
 	<td><strong>Total</strong></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
 	<td><?php echo money_format("%.0n", $total_amount) ?></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
 	<td><?php echo money_format("%.0n", $total_deposited) ?></td>
 	<td><?php echo money_format("%.0n", $total_late_1_weeks) ?></td>
 	<td><?php echo money_format("%.0n", $total_late_2_weeks) ?></td>
 	<td><?php echo money_format("%.0n", $total_late_3_weeks) ?></td>
 	<td><?php echo money_format("%.0n", $total_late_4_or_more_weeks) ?></td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
+
+
+
+
 </tr>
 <?php foreach ($all_donations as $don) { ?>
 <tr>
+	<td><?php echo $don['fundraiser_name'] ?></td>
+	<td><?php echo $don['donor_name'] ?></td>
+
 	<td><?php echo i($all_donation_types, $don['donation_type'], $don['donation_type']) ?></td>
 	<td><?php echo money_format("%.0n", $don['donation_amount']) ?></td>
+	<td><?php echo $all_donation_status[$don['donation_status']] ?></td>
+	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
+
 	<td><?php echo money_format("%.0n", $don['amount_deposited']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_1_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_2_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_3_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_4_or_more_weeks']) ?></td>
-	<td><?php echo $don['donor_name'] ?></td>
-	<td><?php echo $don['fundraiser_name'] ?></td>
-	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
-	<td><?php echo $all_donation_status[$don['donation_status']] ?></td>
+
+
+
+
 </tr>
 <?php } ?>
 </table>
