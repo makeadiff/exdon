@@ -21,7 +21,7 @@ if($donation_status != 'any') {
 	if($donation_status == 'DEPOSITED')
 		$checks[] = "(D.donation_status = 'DEPOSIT_PENDING' OR D.donation_status = 'DEPOSIT COMPLETE' OR D.donation_status = 'RECEIPT SENT' OR D.donation_status = 'RECEIPT PENDING')";
 	else if($donation_status == 'NOT_DEPOSITED')
-		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT' OR D.donation_status != 'RECEIPT PENDING')";
+		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT' AND D.donation_status != 'RECEIPT PENDING')";
 	else 
 		$checks[] = "D.donation_status = '$donation_status'";
 }
