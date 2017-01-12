@@ -13,8 +13,8 @@ $html->buildInput("donation_type", 'Type', 'select', $donation_type, array('opti
 <select name="donation_status" id="donation_status">
 	<optgroup label="Aggregated">
 		<option value="any" <?php if($donation_status == 'any') echo 'selected'; ?>>Any</option>
-		<option value="DEPOSITED" <?php if($donation_status == 'DEPOSITED') echo 'selected'; ?>>Not Deposited</option>
-		<option value="NOT_DEPOSITED" <?php if($donation_status == 'NOT_DEPOSITED') echo 'selected'; ?>>Deposited</option>
+		<option value="DEPOSITED" <?php if($donation_status == 'DEPOSITED') echo 'selected'; ?>>Deposited</option>
+		<option value="NOT_DEPOSITED" <?php if($donation_status == 'NOT_DEPOSITED') echo 'selected'; ?>>Not Deposited</option>
 	</optgroup>
 	<optgroup label="Seperate">
 		<option value="TO_BE_APPROVED_BY_POC" <?php if($donation_status == 'TO_BE_APPROVED_BY_POC') echo 'selected'; ?>>With Volunteer</option>
