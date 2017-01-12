@@ -1,7 +1,7 @@
 <?php
 require('common.php');
 
-$madapp_db = 'Project_Madapp';
+$madapp_db = 'makeadiff_madapp';
 if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
 
 // Argument Parsing.
@@ -19,9 +19,9 @@ if($city_id) $checks[] 	= "U.city_id=$city_id";
 if($coach_id) $checks[]	= "R.manager_id = $coach_id";
 if($donation_status != 'any') {
 	if($donation_status == 'DEPOSITED')
-		$checks[] = "(D.donation_status = 'DEPOSIT_PENDING' OR D.donation_status = 'DEPOSIT COMPLETE' OR D.donation_status = 'RECEIPT SENT')";
+		$checks[] = "(D.donation_status = 'DEPOSIT_PENDING' OR D.donation_status = 'DEPOSIT COMPLETE' OR D.donation_status = 'RECEIPT SENT' OR D.donation_status = 'RECEIPT PENDING')";
 	else if($donation_status == 'NOT_DEPOSITED')
-		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT')";
+		$checks[] = "(D.donation_status != 'DEPOSIT_PENDING' AND D.donation_status != 'DEPOSIT COMPLETE' AND D.donation_status != 'RECEIPT SENT' OR D.donation_status != 'RECEIPT PENDING')";
 	else 
 		$checks[] = "D.donation_status = '$donation_status'";
 }
@@ -105,7 +105,7 @@ foreach ($all_donations as $i => $don) {
 	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
 	
 	// Deposited donations.
-	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING') { // or $don['donation_type'] != 'donut'
+	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING' or $don['donation_status'] == 'RECEIPT PENDING') { // or $don['donation_type'] != 'donut'
 		$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
 		$total_deposited += $don['donation_amount'];
 	
