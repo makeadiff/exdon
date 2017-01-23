@@ -39,10 +39,6 @@ $crud->allow['add'] = false;
 $crud->allow['sorting'] = false;
 
 $all_donation_types = array(
-		'ecs' 			=> 'ECS',
-		'globalgiving'	=> 'Global Giving',
-		'online'		=> 'Online',
-		'other'			=> "Other",
 		'any'			=> 'Any',
 		'nach'			=> 'NACH',
 		'global_giving'	=> 'Global Giving',

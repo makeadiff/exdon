@@ -135,10 +135,7 @@ foreach ($all_donations as $i => $don) {
 }
 
 $all_donation_types = array(
-		'donut'			=> 'Donut',
-		'ecs' 			=> 'ECS',
-		'globalgiving'	=> 'Global Giving',
-		'online'		=> 'Online',
+		'donut'			=> 'Cash/Cheque',
 		'nach' 			=> 'NACH',
 		'global_giving'	=> 'Global Giving',
 		'mad_website'	=> 'MAD Website',
