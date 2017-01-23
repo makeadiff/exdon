@@ -140,7 +140,6 @@ $all_donation_types = array(
 		'global_giving'	=> 'Global Giving',
 		'mad_website'	=> 'MAD Website',
 		'give_india' 	=> 'Give India',
-		'other'			=> "Other",
 		'any'			=> 'Any'
 	);
 $all_donation_status = array(
