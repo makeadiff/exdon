@@ -1,2 +1,4 @@
 configuration.php
 .idea/
+api/auth
+api/tests/vendor

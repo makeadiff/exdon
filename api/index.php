@@ -169,6 +169,35 @@ $api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donatio
 	} else showError($donation->error);
 });
 
+$api->request('/deposit/add', function() {
+	global $QUERY;
+	$deposit = new Deposit;
+
+	$donation_ids = explode(",", $QUERY['donation_ids']);
+
+	$deposit_id = $deposit->add($QUERY['collected_from_user_id'], $QUERY['given_to_user_id'], $donation_ids);
+
+	if($deposit_id) showSuccess("Deposit made", array('deposit_id' => $deposit_id));
+	else showError($deposit->error);
+});
+$api->request('/deposit/approve/{deposit_id}', function($deposit_id) {
+	$deposit = new Deposit;
+	$user_id = 151;
+	$status = $deposit->approve($deposit_id, $user_id);
+
+	if($status) showSuccess("Deposit Approved");
+	else showError($deposit->error);
+});
+
+$api->request('/deposit/reject/{deposit_id}', function($deposit_id) {
+	$deposit = new Deposit;
+	$user_id = 151;
+	$status = $deposit->reject($deposit_id, $user_id);
+
+	if($status) showSuccess("Deposit Rejected");
+	else showError($deposit->error);
+});
+
 $api->request("/user/login", function () {
 	global $QUERY;
 	$user = new User;
@@ -191,7 +220,7 @@ $api->request("/user/get_subordinates/{user_id}", function ($user_id) {
 
 	$return = array('subordinates' => $subordinates);
 
-	showSuccess("Login successful", $return);
+	showSuccess("Subordinate list returned", $return);
 });
 
 $api->notFound(function() {
@@ -224,3 +253,8 @@ function showSituation($status, $message, $extra) {
 
 	print json_encode($return);
 }
+
+/**
+ * :TODO:
+ * Authentication token!
+ */

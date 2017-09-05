@@ -38,17 +38,17 @@ $checks[] = "(" . implode(" OR ", $filter_array) . ")";
 $madapp_joins = array();
 if($group_type != 'any') {
 	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
-	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.`Group` MDG ON MDG.id = MDUG.group_id";
 	$checks[] = "MDG.type = '$group_type'";
 }
 if($vertical_id) {
 	$madapp_joins['UserGroup'] 	= "INNER JOIN $madapp_db.UserGroup MDUG ON U.madapp_user_id = MDUG.user_id";
-	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.Group MDG ON MDG.id = MDUG.group_id";
+	$madapp_joins['Group'] 		= "INNER JOIN $madapp_db.`Group` MDG ON MDG.id = MDUG.group_id";
 	$checks[] = "MDG.vertical_id = '$vertical_id'";
 }
 $all_madapp_joins = implode("\n", array_values($madapp_joins));
 
-$all_group_types = array('national' => 'National', 'fellow' => 'Fellow', 'volunteer' => 'Volunteer', 'any' => 'Any');
+$all_group_types = array('national' => 'National', 'strat' => 'Strat', 'fellow' => 'Fellow', 'volunteer' => 'Volunteer', 'any' => 'Any');
 $all_verticals = $sql->getById("SELECT id,name FROM `$madapp_db`.Vertical WHERE id NOT IN (6,10,11,12,13,14,15,16)");
 $all_verticals[0] = 'Any';
 $all_cities = $sql->getById("SELECT id,name FROM cities ORDER BY name");
@@ -70,7 +70,7 @@ setlocale(LC_MONETARY, 'en_IN');
 $external = array();
 $donut = array();
 
-if($donation_type != 'donut')
+if($donation_type != 'donut') {
 	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email,
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
@@ -79,7 +79,9 @@ if($donation_type != 'donut')
 		INNER JOIN donours DON ON DON.id=D.donor_id
 		$all_madapp_joins
 		WHERE " . implode(" AND ", $checks));
-if($donation_type == 'donut' or $donation_type == 'any')
+	// dump($sql->_query);
+}
+if($donation_type == 'donut' or $donation_type == 'any') {
 	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, 
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
@@ -88,6 +90,8 @@ if($donation_type == 'donut' or $donation_type == 'any')
 		INNER JOIN donours DON ON DON.id=D.donour_id
 		$all_madapp_joins
 		WHERE donation_type='GEN' AND " . implode(" AND ", $checks));
+	// dump($sql->_query);
+}
 $all_donations = array_merge($external, $donut);
 
 $total_amount = 0;

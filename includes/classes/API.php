@@ -107,7 +107,7 @@ class API {
 			for($i=0; $i<count($vars); $i++) {
 				$url_variables[$vars[$i]] = $route_matches[$i+1][0];
 			}
-		} elseif ($action_route == $route) {
+		} elseif (trim($action_route, '/') == trim($route, '/')) {
 			return array();
 		}
 
