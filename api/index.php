@@ -68,12 +68,12 @@ $api->get('/donation/get_total_donation_by_email_for_fraise/{user_email}', funct
 
 });
 
-$api->get('/donation/get_donations_for_poc_approval/{poc_id}', function ($poc_id) {
+$api->get('/donation/get_donations_for_review_by/{reviewer_id}', function ($reviewer_id) {
 	$donation = new Donation;
-	$donations_for_approval = $donation->getDonationsForPocApproval($poc_id);
+	$donations_for_approval = $donation->search(array('reviewer_id' => $reviewer_id));
 
 	if($donations_for_approval)
-		showSuccess(count($donations_for_approval) . " donation(s) waiting for approval", array('donations' => $donations_for_approval));
+		showSuccess(count($donations_for_approval) . " donation(s) waiting for review", array('donations' => $donations_for_approval));
 	else {
 		$error = $donation->error;
 		if(!$error) $error = "No donations to be collected.";
@@ -81,22 +81,9 @@ $api->get('/donation/get_donations_for_poc_approval/{poc_id}', function ($poc_id
 	}
 });
 
-$api->get('/donation/get_donations_for_fc_approval/{poc_id}', function ($poc_id) {
+$api->get('/donation/get_donations_approved_by/{reviewer_id}', function ($reviewer_id) {
 	$donation = new Donation;
-	$donations_for_approval = $donation->getDonationsForFcApproval($poc_id);
-
-	if($donations_for_approval)
-		showSuccess(count($donations_for_approval) . " donation(s) waiting for approval", array('donations' => $donations_for_approval));
-	else {
-		$error = $donation->error;
-		if(!$error) $error = "No donations to be deposited.";
-		showError($error);
-	}
-});
-
-$api->get('/donation/get_poc_approved_donations/{poc_id}', function ($poc_id) {
-	$donation = new Donation;
-	$approved_donations = $donation->getPocApprovedDonations($poc_id);
+	$approved_donations = $donation->search(array('approver_id' => $reviewer_id));
 
 	if($approved_donations)
 		showSuccess(count($approved_donations) . " approved donation(s).", array('donations' => $approved_donations));
@@ -107,15 +94,15 @@ $api->get('/donation/get_poc_approved_donations/{poc_id}', function ($poc_id) {
 	}
 });
 
-$api->get('/donation/get_fc_approved_donations/{fc_id}', function ($fc_id) {
+$api->get('/donation/get_approved_donations_from/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
-	$approved_donations = $donation->getFcApprovedDonations($fc_id);
+	$approved_donations = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposit_status' => true));
 
 	if($approved_donations)
 		showSuccess(count($approved_donations) . " approved donation(s).", array('donations' => $approved_donations));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations that's deposited.";
+		if(!$error) $error = "Can't find any donations that's collected.";
 		showError($error);
 	}
 });
@@ -133,40 +120,50 @@ $api->get('/donation/get_donations/{poc_id}/{status}', function ($poc_id, $statu
 	}
 });
 
-$api->get('/donation/{donation_id}/poc_approve/{poc_id}', function ($donation_id, $poc_id) {
-	$donation = new Donation;
-	if($donation->pocApprove($donation_id, $poc_id)) {
-		showSuccess("Donation approved", array('donation_id' => $donation_id));
-	} else showError($donation->error);
+$api->get('/deposit/{deposit_id}/approve/{reviewer_id}', function ($deposit_id, $reviewer_id) {
+	$deposit = new Deposit;
+	if($deposit->approve($deposit_id, $reviewer_id)) {
+		showSuccess("Deposit approved", array('deposit_id' => $deposit_id));
+	} else showError($deposit->error);
 });
 
-$api->get('/donation/{donation_id}/poc_reject/{poc_id}', function ($donation_id, $poc_id) {
-	$donation = new Donation;
-	if($donation->pocReject($donation_id, $poc_id)) {
-		showSuccess("Donation rejected", array('donation_id' => $donation_id));
-	} else showError($donation->error);
+$api->get('/deposit/{deposit_id}/reject/{reviewer_id}', function ($deposit_id, $reviewer_id) {
+	$deposit = new Deposit;
+	if($deposit->reject($deposit_id, $reviewer_id)) {
+		showSuccess("Deposit rejected", array('deposit_id' => $deposit_id));
+	} else showError($deposit->error);
 });
 
+// $api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
+// 	$donation = new Donation;
+// 	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
+// 		showSuccess("Donation deleted", array('donation_id' => $donation_id));
+// 	} else showError($donation->error);
+// });
 
-$api->get('/donation/{donation_id}/fc_approve/{fc_id}', function ($donation_id, $fc_id) {
+$api->request('/donation/get_undeposited_donations/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
-	if($donation->fcApprove($donation_id, $fc_id)) {
-		showSuccess("Donation approved", array('donation_id' => $donation_id));
-	} else showError($donation->error);
+	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => false));
+
+	if($donations_matched)
+		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
+	else {
+		$error = $donation->error;
+		if(!$error) $error = "Can't find any donations.";
+		showError($error);
+	}
 });
-
-$api->get('/donation/{donation_id}/fc_reject/{fc_id}', function ($donation_id, $fc_id) {
+$api->request('/donation/get_deposited_donations/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
-	if($donation->fcReject($donation_id, $fc_id)) {
-		showSuccess("Donation rejected", array('donation_id' => $donation_id));
-	} else showError($donation->error);
-});
+	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => true));
 
-$api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
-	$donation = new Donation;
-	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
-		showSuccess("Donation deleted", array('donation_id' => $donation_id));
-	} else showError($donation->error);
+	if($donations_matched)
+		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
+	else {
+		$error = $donation->error;
+		if(!$error) $error = "Can't find any donations.";
+		showError($error);
+	}
 });
 
 $api->request('/deposit/add', function() {

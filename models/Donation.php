@@ -176,66 +176,29 @@ class Donation extends DBTable {
 		return $this->search(array('fundraiser_id' => $user_id, 'include_external_donations' => true));
 	}
 
+	/// Get all donations donuted by this user but hasn't been deposited yet
+	function getUndepositedDonationsByFundraiser($user_id) {
+		return $this->search(array(
+				'fundraiser_id'	=> $user_id,
+				'deposited'		=> false
+			));
+	}
+
 	/**
 	 * Search for donations with any of the following parameters...
-	 * 		- poc_id 	Find donations from the volunteers under this user id. 
 	 *   	- amount 	Amount of donation. 
 	 *   	- donor_id 	All the donations from this donor.
 	 *   	- status 	All donations with this status.
+	 *   	- deposited 		true/false 	Return only deposited or Not deposited donations.
 	 *   	- fundraiser_id 	Donations that was raised by this fundraiser.
 	 *   	- fundraiser_ids 	Donations that was raised by any of these fundraisers.
+	 *   	- reviewer_id		Donations that this approver has to review.
 	 * More to be added later.
 	 */
 	function search($params) {
 		global $sql;
 		$sql_checks = array();
-
-		// FC - find all the volunteers under the volunteers of this user_id
-		if(isset($params['fc_id'])) {
-			$fc_id = $params['fc_id'];
-			$user = new User($fc_id);
-
-			if(!$user->hasRole($user->role_ids['FC'])) 
-				return $this->_error("User '{$user->user['name']}' is not a FC. Only FCs have FC approval option.");
-
-			// Get all the POCs under this FC
-			$pocs = $user->getSubordinates();
-			if(!$pocs) return $this->_error("This FC don't have any POCs under them.");
-			else {
-				$fundraisers = array();
-				// Go thru all the POCs ith the list
-				foreach($pocs as $poc_id => $poc_info) {
-					$poc_user = new User($poc_id);
-
-					if($poc_user->hasRole($user->role_ids['CFR POC'])) { // If this user is a POC...
-						$volunteers = $poc_user->getSubordinates(); // ...get the volunteers under him/her.
-						foreach ($volunteers as $volunteer_id => $volunteer_info) {
-							$fundraisers[] = $volunteer_id;
-						}	
-					} else { // If not POC, assume volunteer.
-						$fundraisers[] = $poc_id;
-					}
-				}
-			}
-
-			if(!isset($params['fundraiser_ids'])) $params['fundraiser_ids'] = array();
-			$params['fundraiser_ids'] = array_merge($params['fundraiser_ids'], $fundraisers);
-		}
-
-		// Find all volunteers under this user
-		if(isset($params['poc_id'])) {
-			$poc_id = $params['poc_id'];
-			$user = new User($poc_id);
-
-			if(!$user->hasRole($user->role_ids['CFR POC'])) 
-				return $this->_error("You are not a coach. Only coaches have approval option.");
-
-			$volunteers = $user->getSubordinates();
-			if(!$volunteers) return $this->_error("This user don't have any volunteers under them.");
-
-			if(!isset($params['fundraiser_ids'])) $params['fundraiser_ids'] = array();
-			$params['fundraiser_ids'] = array_merge($params['fundraiser_ids'], array_keys($volunteers));
-		}
+		$sql_joins = array();
 
 		if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
 		if(isset($params['donor_id'])) $sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
@@ -243,6 +206,15 @@ class Donation extends DBTable {
 		if(isset($params['status_in'])) $sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
 		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
 		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
+		if(isset($params['reviewer_id'])) {
+			$sql_joins['reviewer_id'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
+			$sql_checks['reviewer_id'] = "DP.given_to_user_id={$params['reviewer_id']} AND DP.status='pending'";
+		}
+		if(isset($params['approver_id'])) {
+			// Let the key be 'reviewer_id' itself - because exact same thing. Don't want it to be joined twice.
+			$sql_joins['reviewer_id'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id'; 
+			$sql_checks['approver_id'] = "DP.given_to_user_id={$params['approver_id']} AND DP.status='approved'";
+		}
 
 		// Only get donations after a preset date
 		include('../../donutleaderboard/_city_filter.php');
@@ -251,17 +223,26 @@ class Donation extends DBTable {
 
 		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
 				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
-				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
+				D.donation_type
 			FROM donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
-			INNER JOIN reports_tos RT ON RT.user_id=U.id
-			INNER JOIN users POC ON POC.id=RT.manager_id
-			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
 			INNER JOIN donours DON ON DON.id=D.donour_id
+			" . implode("\n", $sql_joins) . "
 			WHERE " . implode($sql_checks, ' AND ') . "
 			GROUP BY D.id
 			ORDER BY D.created_at DESC");
-		// print($sql->_query);
+
+		// Find only deposited or undeposited donations
+		if(isset($params['deposited'])) {
+			foreach ($donations as $donation_id => $donation_info) {
+				$is_deposited = $sql->getOne("SELECT DP.id FROM deposits DP 
+						INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
+						WHERE DD.donation_id=$donation_id AND (DP.status='pending' OR DP.status='approved')");
+
+				// Find donations which had are in the deposits table with status of pending or approved
+				if($is_deposited != $params['deposited']) unset($donations[$donation_id]);
+			}
+		}
 
 		// Include external donation details in the return.
 		if(isset($params['include_external_donations']) and $params['include_external_donations']) {

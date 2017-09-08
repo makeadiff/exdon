@@ -1,34 +1,17 @@
 <?php
-require 'iframe.php';
+require 'common.php';
 use PHPUnit\Framework\TestCase;
 
-class ApiTest extends TestCase {
-	private $base_url = 'http://localhost/Sites/community/makeadiff/makeadiff.in/apps/exdon/api/';
+class DepositApiTest extends TestCase {
+	private $base_url = '';
 
 	private $collected_from_user_id = 8902;
 	private $given_to_user_id = 151;
 	private $only_priority_tests = false;
 
-	public function testLogin() {
-		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
-
-		$user_name = '9746068565';
-		$password = 'pass';
-
-		$login_url = $this->base_url . 'user/login';
-
-		$return = load($login_url, array(
-					'method' => 'post', 
-					'post_data' => array(
-						'phone'		=> $user_name,
-						'password'	=> $password
-			)));
-
-		$data = json_decode($return);
-		$this->assertFalse($data->error); // Failure is false
-		$this->assertEquals($data->success, "Login successful");
-		$this->assertEquals(trim($data->user->name), "Binny V A");
-		$this->assertEquals($data->user->madapp_user_id, "1");
+	public function __construct() {
+		global $base_url;
+		$this->base_url = $base_url;
 	}
 
 	public function testDepositAddValidation() {
