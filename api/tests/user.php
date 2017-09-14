@@ -1,5 +1,5 @@
 <?php
-require 'iframe.php';
+require 'common.php';
 use PHPUnit\Framework\TestCase;
 
 class UserApiTest extends TestCase {
@@ -14,7 +14,7 @@ class UserApiTest extends TestCase {
 	public function testLogin() {
 		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
 
-		$user_name = '9746068565';
+		$user_name = '9746060013';
 		$password = 'pass';
 
 		$login_url = $this->base_url . 'user/login';
@@ -29,7 +29,7 @@ class UserApiTest extends TestCase {
 		$data = json_decode($return);
 		$this->assertFalse($data->error); // Failure is false
 		$this->assertEquals($data->success, "Login successful");
-		$this->assertEquals(trim($data->user->name), "Binny V A");
+		$this->assertEquals(trim($data->user->name), "Unit Test");
 		$this->assertEquals($data->user->madapp_user_id, "1");
 	}
 

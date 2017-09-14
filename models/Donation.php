@@ -176,14 +176,6 @@ class Donation extends DBTable {
 		return $this->search(array('fundraiser_id' => $user_id, 'include_external_donations' => true));
 	}
 
-	/// Get all donations donuted by this user but hasn't been deposited yet
-	function getUndepositedDonationsByFundraiser($user_id) {
-		return $this->search(array(
-				'fundraiser_id'	=> $user_id,
-				'deposited'		=> false
-			));
-	}
-
 	/**
 	 * Search for donations with any of the following parameters...
 	 *   	- amount 	Amount of donation. 
@@ -200,6 +192,8 @@ class Donation extends DBTable {
 		$sql_checks = array();
 		$sql_joins = array();
 
+		// :TODO: If a POC makes a call to get undeposited donations, they should get donations they approved - not just the ones they fundraised
+
 		if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
 		if(isset($params['donor_id'])) $sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
 		if(isset($params['status'])) $sql_checks['status'] = "D.donation_status = '" . $params['status'] . "'";
@@ -207,13 +201,25 @@ class Donation extends DBTable {
 		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
 		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
 		if(isset($params['reviewer_id'])) {
-			$sql_joins['reviewer_id'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
-			$sql_checks['reviewer_id'] = "DP.given_to_user_id={$params['reviewer_id']} AND DP.status='pending'";
+			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
+			$sql_checks['reviewer_id'] = "DP.given_to_user_id={$params['reviewer_id']}";
+			if(!isset($sql_checks['deposit_status'])) $sql_checks['deposit_status'] = "DP.status='pending'";
 		}
 		if(isset($params['approver_id'])) {
 			// Let the key be 'reviewer_id' itself - because exact same thing. Don't want it to be joined twice.
-			$sql_joins['reviewer_id'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id'; 
-			$sql_checks['approver_id'] = "DP.given_to_user_id={$params['approver_id']} AND DP.status='approved'";
+			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id'; 
+			$sql_checks['approver_id'] = "DP.given_to_user_id={$params['approver_id']}";
+			if(!isset($sql_checks['deposit_status'])) $sql_checks['deposit_status'] = "DP.status='approved'";
+		}
+		if(isset($params['deposit_status'])) {
+			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
+			$sql_checks['deposit_status'] = "DP.status='$params[deposit_status]'";
+		}
+		if(isset($params['deposit_status_in'])) {
+			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
+			$deposit_status = array();
+			foreach ($params['deposit_status_in'] as $value) $deposit_status[] = "DP.status = '$value'";
+			$sql_checks['deposit_status'] = "(" . implode(" OR ", $deposit_status) . ")";
 		}
 
 		// Only get donations after a preset date
@@ -222,25 +228,35 @@ class Donation extends DBTable {
 		$sql_checks['from_date'] = "D.created_at >= '$from_date 00:00:00'";
 
 		$donations = $sql->getById("SELECT D.id, D.donation_status, D.eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.donation_amount AS amount,
-				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
+				U.id AS user_id, TRIM(CONCAT(U.first_name,' ',U.last_name)) AS user_name, DON.id AS donor_id, TRIM(CONCAT(DON.first_name, ' ', DON.last_name)) AS donor_name,
 				D.donation_type
 			FROM donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
 			INNER JOIN donours DON ON DON.id=D.donour_id
 			" . implode("\n", $sql_joins) . "
-			WHERE " . implode($sql_checks, ' AND ') . "
+			WHERE " . implode(' AND ', $sql_checks) . "
 			GROUP BY D.id
 			ORDER BY D.created_at DESC");
+		// print $sql->_query;
 
-		// Find only deposited or undeposited donations
-		if(isset($params['deposited'])) {
+		// Find only deposited or undeposited donations - also used to include deposit info.
+		if(isset($params['deposited']) or (isset($params['include_deposit_info']) and $params['include_deposit_info'])) {
 			foreach ($donations as $donation_id => $donation_info) {
-				$is_deposited = $sql->getOne("SELECT DP.id FROM deposits DP 
+				$deposit_info = $sql->getAssoc("SELECT DP.* FROM deposits DP 
 						INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
-						WHERE DD.donation_id=$donation_id AND (DP.status='pending' OR DP.status='approved')");
+						WHERE DD.donation_id=$donation_id AND DP.status IN ('approved', 'pending')");
 
-				// Find donations which had are in the deposits table with status of pending or approved
-				if($is_deposited != $params['deposited']) unset($donations[$donation_id]);
+				if(isset($params['include_deposit_info']) and $params['include_deposit_info']) {
+					$donations[$donation_id]['deposit'] = $deposit_info;
+				}
+
+				if(isset($params['deposited'])) {
+					// Find donations which had are in the deposits table with status of pending or approved
+					if(!$deposit_info and $params['deposited'])  unset($donations[$donation_id]); // Deposit info not present - undeposited.
+					if($deposit_info and ($deposit_info['status'] == 'approved' or $deposit_info['status'] == 'pending')) {// Approved or pending deposit
+						if($params['deposited'] == false) unset($donations[$donation_id]); // If they want only undeposited donations, unset
+					} else if($params['deposited'] == true) unset($donations[$donation_id]); // Only deposited donations go thru.
+				}
 			}
 		}
 
@@ -249,7 +265,7 @@ class Donation extends DBTable {
 			if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.amount = " . $params['amount']; // Different field name for amount.
 
 			$external_donations = $sql->getById("SELECT CONCAT('Ex:',D.id) AS id, D.donation_status, '0' AS eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.amount,
-				U.id AS user_id, CONCAT(U.first_name,' ',U.last_name) AS user_name, DON.id AS donor_id, CONCAT(DON.first_name, ' ', DON.last_name) AS donor_name,
+				U.id AS user_id, TRIM(CONCAT(U.first_name,' ',U.last_name)) AS user_name, DON.id AS donor_id, TRIM(CONCAT(DON.first_name, ' ', DON.last_name)) AS donor_name,
 				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
 			FROM external_donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id

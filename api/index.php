@@ -65,10 +65,9 @@ $api->get('/donation/get_total_donation_by_email_for_fraise/{user_email}', funct
 	}else{
 		print "0";
 	}
-
 });
 
-$api->get('/donation/get_donations_for_review_by/{reviewer_id}', function ($reviewer_id) {
+$api->get('/donation/for_review_by/{reviewer_id}', function ($reviewer_id) {
 	$donation = new Donation;
 	$donations_for_approval = $donation->search(array('reviewer_id' => $reviewer_id));
 
@@ -81,7 +80,7 @@ $api->get('/donation/get_donations_for_review_by/{reviewer_id}', function ($revi
 	}
 });
 
-$api->get('/donation/get_donations_approved_by/{reviewer_id}', function ($reviewer_id) {
+$api->get('/donation/approved_by/{reviewer_id}', function ($reviewer_id) {
 	$donation = new Donation;
 	$approved_donations = $donation->search(array('approver_id' => $reviewer_id));
 
@@ -94,7 +93,7 @@ $api->get('/donation/get_donations_approved_by/{reviewer_id}', function ($review
 	}
 });
 
-$api->get('/donation/get_approved_donations_from/{fundraiser_id}', function ($fundraiser_id) {
+$api->get('/donation/approved_from_fundraiser/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
 	$approved_donations = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposit_status' => true));
 
@@ -107,33 +106,6 @@ $api->get('/donation/get_approved_donations_from/{fundraiser_id}', function ($fu
 	}
 });
 
-$api->get('/donation/get_donations/{poc_id}/{status}', function ($poc_id, $status) {
-	$donation = new Donation;
-	$donations_matched = $donation->search(array('poc_id' => $poc_id, 'status' => $status));
-
-	if($donations_matched)
-		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
-	else {
-		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations.";
-		showError($error);
-	}
-});
-
-$api->get('/deposit/{deposit_id}/approve/{reviewer_id}', function ($deposit_id, $reviewer_id) {
-	$deposit = new Deposit;
-	if($deposit->approve($deposit_id, $reviewer_id)) {
-		showSuccess("Deposit approved", array('deposit_id' => $deposit_id));
-	} else showError($deposit->error);
-});
-
-$api->get('/deposit/{deposit_id}/reject/{reviewer_id}', function ($deposit_id, $reviewer_id) {
-	$deposit = new Deposit;
-	if($deposit->reject($deposit_id, $reviewer_id)) {
-		showSuccess("Deposit rejected", array('deposit_id' => $deposit_id));
-	} else showError($deposit->error);
-});
-
 // $api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
 // 	$donation = new Donation;
 // 	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
@@ -141,9 +113,12 @@ $api->get('/deposit/{deposit_id}/reject/{reviewer_id}', function ($deposit_id, $
 // 	} else showError($donation->error);
 // });
 
-$api->request('/donation/get_undeposited_donations/{fundraiser_id}', function ($fundraiser_id) {
+/// Get all donations donuted by this user but hasn't been deposited yet
+$api->request('/donation/undeposited/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
-	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => false));
+	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => false, 'include_deposit_info' => true));
+
+	// :TODO: Include donations raised by others - but approved by current user. For POCs
 
 	if($donations_matched)
 		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
@@ -153,9 +128,9 @@ $api->request('/donation/get_undeposited_donations/{fundraiser_id}', function ($
 		showError($error);
 	}
 });
-$api->request('/donation/get_deposited_donations/{fundraiser_id}', function ($fundraiser_id) {
+$api->request('/donation/deposited/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
-	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => true));
+	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposit_status' => 'approved', 'include_deposit_info' => true));
 
 	if($donations_matched)
 		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
@@ -165,6 +140,8 @@ $api->request('/donation/get_deposited_donations/{fundraiser_id}', function ($fu
 		showError($error);
 	}
 });
+
+
 
 $api->request('/deposit/add', function() {
 	global $QUERY;
@@ -177,19 +154,34 @@ $api->request('/deposit/add', function() {
 	if($deposit_id) showSuccess("Deposit made", array('deposit_id' => $deposit_id));
 	else showError($deposit->error);
 });
-$api->request('/deposit/approve/{deposit_id}', function($deposit_id) {
+
+/**
+ * [{"deposit_id": 3, "amount": 3500, "collected_from_user_id": 16634, "given_to_user_id": 151, "added_on": "2017-09-09 16:25:48", "status": "pending", 
+ * 		"donations": [ ... ]}]
+ */
+$api->get('/deposit/for_review_by/{reviewer_id}', function ($reviewer_id) {
 	$deposit = new Deposit;
-	$user_id = 151;
-	$status = $deposit->approve($deposit_id, $user_id);
+	$deposits_for_approval = $deposit->search(array('reviewer_id' => $reviewer_id));
+
+	if($deposits_for_approval)
+		showSuccess(count($deposits_for_approval) . " deposit(s) waiting for review", array('deposits' => $deposits_for_approval));
+	else {
+		$error = $deposit->error;
+		if(!$error) $error = "No donations to be collected.";
+		showError($error);
+	}
+});
+$api->request('/deposit/{deposit_id}/approve/{reviewer_id}', function($deposit_id, $reviewer_id) {
+	$deposit = new Deposit;
+	$status = $deposit->approve($deposit_id, $reviewer_id);
 
 	if($status) showSuccess("Deposit Approved");
 	else showError($deposit->error);
 });
 
-$api->request('/deposit/reject/{deposit_id}', function($deposit_id) {
+$api->request('/deposit/{deposit_id}/reject/{reviewer_id}', function($deposit_id, $reviewer_id) {
 	$deposit = new Deposit;
-	$user_id = 151;
-	$status = $deposit->reject($deposit_id, $user_id);
+	$status = $deposit->reject($deposit_id, $reviewer_id);
 
 	if($status) showSuccess("Deposit Rejected");
 	else showError($deposit->error);
@@ -211,13 +203,10 @@ $api->request("/user/login", function () {
 	showSuccess("Login successful", $return);
 });
 
-$api->request("/user/get_subordinates/{user_id}", function ($user_id) {
+$api->get("/user/get_coaches_in_city/{city_id}", function($city_id) {
 	$user = new User;
-	$subordinates = $user->getSubordinates($user_id);
-
-	$return = array('subordinates' => $subordinates);
-
-	showSuccess("Subordinate list returned", $return);
+	$coaches = $user->getCoachesInCity($city_id);
+	showSuccess(count($coaches) . ' coach(es) in city.', array('coaches' => $coaches));
 });
 
 $api->notFound(function() {

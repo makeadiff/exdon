@@ -5,14 +5,25 @@ use PHPUnit\Framework\TestCase;
 class DepositApiTest extends TestCase {
 	private $base_url = '';
 
-	private $collected_from_user_id = 8902;
-	private $given_to_user_id = 151;
-	private $only_priority_tests = false;
+	private $collected_from_user_id = 16634; // 'Unit Test' user
+	private $given_to_user_id = 151;  // Sushma
+	private $only_priority_tests = true;
 
 	public function __construct() {
 		global $base_url;
 		$this->base_url = $base_url;
 	}
+
+	public function testDepoitForReviewBy() {
+		// if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
+		
+		$search_url = $this->base_url . 'deposit/for_review_by/' . $this->given_to_user_id;
+		$return = load($search_url); $data = json_decode($return);
+		$this->assertEquals($data->error, false, "Returned data: $return\n" . var_export($data, true) . "\n$search_url");
+		$this->assertEquals($data->deposits->{4}->amount, 13, "Returned data: $return\n" . var_export($data, true) . "\n$search_url");
+		$this->assertEquals($data->deposits->{4}->donations->{8791}->donation_amount, 13, "Returned data: $return\n" . var_export($data, true) . "\n$search_url");
+	}
+
 
 	public function testDepositAddValidation() {
 		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
@@ -23,9 +34,9 @@ class DepositApiTest extends TestCase {
 		$invalid_given_to_user_id = 3; // Invalid User 
 		$invalid_donation_ids = [1,2,3];
 
-		$collected_from_user_id = $this->collected_from_user_id; // Binny
-		$given_to_user_id = $this->given_to_user_id; // Sushma
-		$deposited_donation_ids = [6373, 6437]; // Deposited donations. Will cause failue.
+		$collected_from_user_id = $this->collected_from_user_id; 
+		$given_to_user_id = $this->given_to_user_id;
+		$deposited_donation_ids = [8792]; // Deposited donations. Will cause failue.
 
 		$post_data = array(
 				'collected_from_user_id'=> $invalid_collected_from_user_id,
@@ -49,17 +60,17 @@ class DepositApiTest extends TestCase {
 
 		$post_data['donation_ids'] = implode(',', $deposited_donation_ids);
 		$data = json_decode(load($deposit_add_url, array('method' => 'post', 'post_data' => $post_data)));
-		$this->assertEquals("Dontation 6373 is already deposited. You cannot deposit it again.", $data->error, "Returned data: " . var_export($data, true));
+		$this->assertEquals("Dontation 8792 is already deposited. You cannot deposit it again.", $data->error, "Returned data: " . var_export($data, true));
 	}
 
 	public function testDepositAdd() {
-		// if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
+		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
 
 		$deposit_add_url = $this->base_url . 'deposit/add/';
 
 		$collected_from_user_id = $this->collected_from_user_id; // Binny
 		$given_to_user_id = $this->given_to_user_id; // Sushma
-		$donation_ids = [6713, 4938];
+		$donation_ids = [8790]; // Rejected donation. Will let you deposit again.
 
 		$post_data = array(
 			'collected_from_user_id'=> $collected_from_user_id,
@@ -76,7 +87,9 @@ class DepositApiTest extends TestCase {
      * @depends testDepositAdd
      */
 	public function testDepositApprove($deposit_id) {
-		$deposit_approve_url = $this->base_url . 'deposit/approve/' . $deposit_id;
+		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
+
+		$deposit_approve_url = $this->base_url . "deposit/$deposit_id/approve/" . $this->given_to_user_id;
 
 		$return = load($deposit_approve_url); $data = json_decode($return);
 		$this->assertEquals($data->success, "Deposit Approved", "Returned data: $return\n" . var_export($data, true) . "\n$deposit_approve_url");
@@ -86,9 +99,12 @@ class DepositApiTest extends TestCase {
      * @depends testDepositAdd
      */
 	public function testDepositReject($deposit_id) {
-		$deposit_reject_url = $this->base_url . 'deposit/reject/' . $deposit_id;
+		if($this->only_priority_tests) $this->markTestSkipped("Running only priority tests.");
+
+		$deposit_reject_url = $this->base_url . "deposit/$deposit_id/reject/" . $this->given_to_user_id;
 
 		$return = load($deposit_reject_url); $data = json_decode($return);
 		$this->assertEquals($data->success, "Deposit Rejected", "Returned data: $return\n" . var_export($data, true) . "\n$deposit_reject_url");
 	}
+
 } 

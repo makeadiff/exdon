@@ -87,6 +87,8 @@ class API {
 
 		if(strpos($route, '?') !== false) $route = @reset(explode("?", $route));// If URL has parameters, ignore them
 
+		// print "$action_route : $route \n";
+
 		if(preg_match_all('#\{(\w+)\}#', $action_route, $matches)) {
 			$vars = array();
 

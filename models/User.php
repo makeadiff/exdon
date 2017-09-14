@@ -19,7 +19,7 @@ class User extends DBTable {
 	function login($phone, $password) {
 		global $sql;
 
-		$user = $sql->getAssoc("SELECT id,email,phone_no AS phone, CONCAT(first_name, ' ', last_name) AS name, city_id, madapp_user_id, group_id,encrypted_password 
+		$user = $sql->getAssoc("SELECT id,email,phone_no AS phone, TRIM(CONCAT(first_name, ' ', last_name)) AS name, city_id, madapp_user_id, group_id,encrypted_password 
 									FROM `users` U 
 									WHERE (email='$phone' OR phone_no='$phone') AND is_deleted='0'");
 		if(!$user) {
@@ -89,6 +89,16 @@ class User extends DBTable {
 		if(!$user_id and isset($this->user['id'])) $user_id = $this->user['id'];
 		if(!$user_id) $this->_error("No User ID provided.");
 		return $user_id;
+	}
+
+	function getCoachesInCity($city_id) {
+		global $sql;
+
+		$coaches = $sql->getById("SELECT U.id, TRIM(CONCAT(U.first_name, ' ', U.last_name)) AS name, email, phone_no
+			FROM users U
+			INNER JOIN user_role_maps RM ON RM.user_id=U.id
+			WHERE U.is_deleted='0' AND RM.role_id=9 AND U.city_id=$city_id");
+		return $coaches;
 	}
 
 	function _error($message) {
