@@ -27,7 +27,7 @@ class Deposit extends DBTable {
 			$pre_existing_deposit = $this->sql->getOne("SELECT D.id FROM donations D
 							INNER JOIN deposits_donations DD ON DD.donation_id=D.id
 							INNER JOIN deposits DEP ON DEP.id=DD.deposit_id
-							WHERE DEP.status IN ('pending', 'approved') AND D.id=$donation_id");
+							WHERE DEP.status IN ('pending', 'approved') AND D.id=$donation_id AND DEP.collected_from_user_id=$collected_from_user_id");
 			if($pre_existing_deposit) return $this->_error("Dontation $donation_id is already deposited. You cannot deposit it again.");
 
 			// :TODO: Check if this user has the ability to deposit this donation - must be a donation the user fundraised or approved at some point.

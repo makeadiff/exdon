@@ -192,14 +192,13 @@ class Donation extends DBTable {
 		$sql_checks = array();
 		$sql_joins = array();
 
-		// :TODO: If a POC makes a call to get undeposited donations, they should get donations they approved - not just the ones they fundraised
-
 		if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
 		if(isset($params['donor_id'])) $sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
 		if(isset($params['status'])) $sql_checks['status'] = "D.donation_status = '" . $params['status'] . "'";
 		if(isset($params['status_in'])) $sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
 		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
 		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
+		if(isset($params['updated_by'])) $sql_checks['updated_by'] = "D.updated_by = " . $params['updated_by'];
 		if(isset($params['reviewer_id'])) {
 			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
 			$sql_checks['reviewer_id'] = "DP.given_to_user_id={$params['reviewer_id']}";
@@ -237,14 +236,16 @@ class Donation extends DBTable {
 			WHERE " . implode(' AND ', $sql_checks) . "
 			GROUP BY D.id
 			ORDER BY D.created_at DESC");
-		// print $sql->_query;
+		// print $sql->_query . "\n";
 
 		// Find only deposited or undeposited donations - also used to include deposit info.
 		if(isset($params['deposited']) or (isset($params['include_deposit_info']) and $params['include_deposit_info'])) {
+			$person_id = i($params, 'fundraiser_id');
+			if(!$person_id) $person_id = i($params, 'updated_by');
 			foreach ($donations as $donation_id => $donation_info) {
 				$deposit_info = $sql->getAssoc("SELECT DP.* FROM deposits DP 
 						INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
-						WHERE DD.donation_id=$donation_id AND DP.status IN ('approved', 'pending')");
+						WHERE DD.donation_id=$donation_id AND DP.collected_from_user_id=$person_id AND DP.status IN ('approved', 'pending')");
 
 				if(isset($params['include_deposit_info']) and $params['include_deposit_info']) {
 					$donations[$donation_id]['deposit'] = $deposit_info;

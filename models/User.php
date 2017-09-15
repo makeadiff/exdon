@@ -37,7 +37,7 @@ class User extends DBTable {
 		}
 
 		$user['coach_assigned'] = false;
-		if($this->hasRole(10, $user['id'])) {
+		if($this->hasRole($this->role_ids['Volunteer'], $user['id'])) {
 			$user['coach_assigned'] = $sql->getAssoc("SELECT U.id, U.first_name, U.phone_no
 						FROM users U 
 						INNER JOIN user_role_maps URM ON URM.user_id=U.id 
@@ -97,8 +97,18 @@ class User extends DBTable {
 		$coaches = $sql->getById("SELECT U.id, TRIM(CONCAT(U.first_name, ' ', U.last_name)) AS name, email, phone_no
 			FROM users U
 			INNER JOIN user_role_maps RM ON RM.user_id=U.id
-			WHERE U.is_deleted='0' AND RM.role_id=9 AND U.city_id=$city_id");
+			WHERE U.is_deleted='0' AND RM.role_id={$this->role_ids['CFR POC']} AND U.city_id=$city_id");
 		return $coaches;
+	}
+
+	function getFinanceFellowInCity($city_id) {
+		global $sql;
+
+		$fc = $sql->getById("SELECT U.id, TRIM(CONCAT(U.first_name, ' ', U.last_name)) AS name, email, phone_no
+			FROM users U
+			INNER JOIN user_role_maps RM ON RM.user_id=U.id
+			WHERE U.is_deleted='0' AND RM.role_id={$this->role_ids['FC']} AND U.city_id=$city_id");
+		return $fc;
 	}
 
 	function _error($message) {

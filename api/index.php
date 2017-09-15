@@ -117,14 +117,25 @@ $api->get('/donation/approved_from_fundraiser/{fundraiser_id}', function ($fundr
 $api->request('/donation/undeposited/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
 	$donations_matched = $donation->search(array('fundraiser_id' => $fundraiser_id, 'deposited' => false, 'include_deposit_info' => true));
+	$approved_donations_matched = array();
 
-	// :TODO: Include donations raised by others - but approved by current user. For POCs
+	// Include donations raised by others - but approved by current user. For POCs
+	$user = new User($fundraiser_id);
+	if($user->hasRole($user->role_ids['CFR POC']) or $user->hasRole($user->role_ids['FC'])) {
+		$approved_donations_matched = $donation->search(array('updated_by' => $fundraiser_id, 'deposited' => false, 'include_deposit_info' => true));
+	}
 
-	if($donations_matched)
-		showSuccess(count($donations_matched) . " donation(s).", array('donations' => $donations_matched));
+	$donation_count = count($approved_donations_matched) + count($donations_matched);
+	
+	if($donation_count)
+		showSuccess($donation_count . " donation(s).", array(
+							'donations' => $donations_matched, 
+							'approved_donations' => $approved_donations_matched,
+							'count'	=> $donation_count
+						));
 	else {
 		$error = $donation->error;
-		if(!$error) $error = "Can't find any donations.";
+		if(!$error) $error = "Can't find any donations that needs to be deposited.";
 		showError($error);
 	}
 });
@@ -175,7 +186,7 @@ $api->request('/deposit/{deposit_id}/approve/{reviewer_id}', function($deposit_i
 	$deposit = new Deposit;
 	$status = $deposit->approve($deposit_id, $reviewer_id);
 
-	if($status) showSuccess("Deposit Approved");
+	if($status) showSuccess("Deposit Approved", array('deposit_id' => $deposit_id));
 	else showError($deposit->error);
 });
 
@@ -183,7 +194,7 @@ $api->request('/deposit/{deposit_id}/reject/{reviewer_id}', function($deposit_id
 	$deposit = new Deposit;
 	$status = $deposit->reject($deposit_id, $reviewer_id);
 
-	if($status) showSuccess("Deposit Rejected");
+	if($status) showSuccess("Deposit Rejected", array('deposit_id' => $deposit_id));
 	else showError($deposit->error);
 });
 
@@ -206,7 +217,12 @@ $api->request("/user/login", function () {
 $api->get("/user/get_coaches_in_city/{city_id}", function($city_id) {
 	$user = new User;
 	$coaches = $user->getCoachesInCity($city_id);
-	showSuccess(count($coaches) . ' coach(es) in city.', array('coaches' => $coaches));
+	showSuccess(count($coaches) . ' coach(es) in city.', array('users' => $coaches));
+});
+$api->get("/user/get_finace_fellow_in_city/{city_id}", function($city_id) {
+	$user = new User;
+	$fc = $user->getFinanceFellowInCity($city_id);
+	showSuccess(count($fc) . ' finance fellow in city.', array('users' => $fc));
 });
 
 $api->notFound(function() {
