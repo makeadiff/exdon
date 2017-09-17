@@ -1,8 +1,8 @@
 <?php
 class Donation extends DBTable {
-
 	public $error;
 	public $start_date = '2016-10-01';
+	public $current_mode = 'testing';
 
 	private $status_order = array('TO_BE_APPROVED_BY_POC', 'HAND_OVER_TO_FC_PENDING', 'DEPOSIT_PENDING', 'DEPOSIT COMPLETE');
 
@@ -38,6 +38,7 @@ class Donation extends DBTable {
 		} else {
 			$created_at = date('Y-m-d H:i:s');
 		}
+		if(empty($comment)) $comment = '';
 
 		if(isset($donation_type) and ($donation_type == 'global_giving' or $donation_type == 'mad_website' or $donation_type == 'give_india' or $donation_type == 'nach')) {
 			return $this->addExternal($donation_type, $data);
@@ -62,27 +63,31 @@ class Donation extends DBTable {
 				'product_id'		=> 1,
 			));
 
-		//Send acknowledgment SMS
-		$sms = new SMS();
-		$sms->message = "Dear $donor_name, Thanks a lot for your contribution of Rs. $amount towards Make a Difference. This is only an acknowledgement. A confirmation and e-receipt would be sent once the amount reaches us.";
-		$sms->number = $donor_phone;
-		$sms->send();
+		if($this->current_mode != 'testing') {
+			//Send acknowledgment SMS
+			$sms = new SMS();
+			$sms->message = "Dear $donor_name, Thanks a lot for your contribution of Rs. $amount towards Make a Difference. This is only an acknowledgement. A confirmation and e-receipt would be sent once the amount reaches us.";
+			$sms->number = $donor_phone;
+			$sms->send();
+		}
 
-		//Send acknowledgement Email
-		$base_url = '../';
-		$images[] = $base_url . 'assets/mad-letterhead-left.png';
-		$images[] = $base_url . 'assets/mad-letterhead-logo.png';
-		$images[] = $base_url . 'assets/mad-letterhead-right.png';
+		if($this->current_mode != 'testing') {
+			//Send acknowledgement Email
+			$base_url = '../';
+			$images[] = $base_url . 'assets/mad-letterhead-left.png';
+			$images[] = $base_url . 'assets/mad-letterhead-logo.png';
+			$images[] = $base_url . 'assets/mad-letterhead-right.png';
 
-		$email = new Email();
-		$email_html = file_get_contents($base_url . 'templates/email/donation_acknowledgement.html');
-		$email->html = str_replace(	array('%BASE_URL%', '%AMOUNT%', '%DONOR_NAME%', '%DATE%'), 
-									array($base_url, 	$amount, 	$donor_name, 	date('d/m/Y')), $email_html);
-		$email->to = $donor_email;
-		$email->from = "noreply <noreply@makeadiff.in>";
-		$email->subject = "Donation Acknowledgment";
-		$email->images = $images;
-		$email->send();
+			$email = new Email();
+			$email_html = file_get_contents($base_url . 'templates/email/donation_acknowledgement.html');
+			$email->html = str_replace(	array('%BASE_URL%', '%AMOUNT%', '%DONOR_NAME%', '%DATE%'), 
+										array($base_url, 	$amount, 	$donor_name, 	date('d/m/Y')), $email_html);
+			$email->to = $donor_email;
+			$email->from = "noreply <noreply@makeadiff.in>";
+			$email->subject = "Donation Acknowledgment";
+			$email->images = $images;
+			$email->send();
+		}
 
 		return $donation_id;
 	}

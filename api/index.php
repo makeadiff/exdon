@@ -226,6 +226,7 @@ $api->get("/user/get_finace_fellow_in_city/{city_id}", function($city_id) {
 });
 
 $api->notFound(function() {
+	http_response_code(404);
 	print "404";
 });
 
