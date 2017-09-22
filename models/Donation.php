@@ -153,28 +153,6 @@ class Donation extends DBTable {
 
 		return $donor_id;
 	}
-	// :TODO: 
-	// Create a API in full from for donut option. Perhabs this can wait till the refactoring. *Hope it happens*
-
-	/// Get all the donations that were made - but not approved yet - buy the volunteers under the given user(POC).
-	function getDonationsForPocApproval($poc_id) {
-		return $this->search(array('poc_id' => $poc_id, 'status' => 'TO_BE_APPROVED_BY_POC'));
-	}
-
-	/// Get all the approved donations buy the volunteers under the given user(POC).
-	function getPocApprovedDonations($poc_id) {
-		return $this->search(array('poc_id' => $poc_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
-	}
-
-	/// Get all the donations that were made - but not approved yet - buy the volunteers under the given user(FC).
-	function getDonationsForFcApproval($fc_id) {
-		return $this->search(array('fc_id' => $fc_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
-	}
-
-	/// Get all the approved donations buy the volunteers under the given user(FC).
-	function getFcApprovedDonations($fc_id) {
-		return $this->search(array('fc_id' => $fc_id, 'status_in' => array('DEPOSIT_PENDING', 'DEPOSIT COMPLETE', 'RECIPT PENDING', 'RECEIPT SENT')));
-	}
 
 	/// Get all the donations donuted by the given user
 	function getDonationsByUser($user_id) {
@@ -270,14 +248,10 @@ class Donation extends DBTable {
 		if(isset($params['include_external_donations']) and $params['include_external_donations']) {
 			if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.amount = " . $params['amount']; // Different field name for amount.
 
-			$external_donations = $sql->getById("SELECT CONCAT('Ex:',D.id) AS id, D.donation_status, '0' AS eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.amount,
-				U.id AS user_id, TRIM(CONCAT(U.first_name,' ',U.last_name)) AS user_name, DON.id AS donor_id, TRIM(CONCAT(DON.first_name, ' ', DON.last_name)) AS donor_name,
-				CONCAT(POC.first_name,' ',POC.last_name) AS poc_name, D.donation_type
+			$external_donations = $sql->getById("SELECT CONCAT('Ex:',D.id) AS id, D.donation_status, '0' AS eighty_g_required, D.created_at, D.updated_at, D.updated_by, D.amount, D.donation_type,
+				U.id AS user_id, TRIM(CONCAT(U.first_name,' ',U.last_name)) AS user_name, DON.id AS donor_id, TRIM(CONCAT(DON.first_name, ' ', DON.last_name)) AS donor_name
 			FROM external_donations D 
 			INNER JOIN users U ON D.fundraiser_id=U.id
-			INNER JOIN reports_tos RT ON RT.user_id=U.id
-			INNER JOIN users POC ON POC.id=RT.manager_id
-			INNER JOIN user_role_maps URM ON URM.user_id=POC.id AND URM.role_id=9
 			INNER JOIN donours DON ON DON.id=D.donor_id
 			WHERE " . implode($sql_checks, ' AND ') . "
 			GROUP BY D.id

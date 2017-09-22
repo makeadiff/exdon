@@ -36,6 +36,7 @@ $api->post('/donation/validate', function() {
 	else showError($donation->error);
 });
 
+// /donation/by_fundraiser/{fundraiser_id}
 $api->get('/donation/get_donations_by_user/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
 	$my_donations = $donation->getDonationsByUser($fundraiser_id);
@@ -49,6 +50,7 @@ $api->get('/donation/get_donations_by_user/{fundraiser_id}', function ($fundrais
 	}
 });
 
+// /donation/total_by_email/{user_email}
 $api->get('/donation/get_total_donation_by_email/{user_email}', function($user_email) {
 	$donation = new Donation;
 	$total = $donation->getTotalDonations(array('email' => $user_email));
@@ -56,6 +58,7 @@ $api->get('/donation/get_total_donation_by_email/{user_email}', function($user_e
 	showSuccess("Donation Amount: $total", array('total' => $total));
 });
 
+// /donation/total_by_email_for_fraise/{user_email}
 $api->get('/donation/get_total_donation_by_email_for_fraise/{user_email}', function($user_email) {
 	$donation = new Donation;
 	$total = $donation->getTotalDonations(array('email' => $user_email));
