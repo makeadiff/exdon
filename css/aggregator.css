@@ -1,0 +1,7 @@
+#wrapper, #content {
+	width: 100%;
+}
+
+.form-area label {
+	width:150px;
+}
