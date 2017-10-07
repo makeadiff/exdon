@@ -1,8 +1,7 @@
 <?php
 require('common.php');
 
-$madapp_db = 'Project_Madapp';
-if(isset($_SERVER['HTTP_HOST']) and $_SERVER['HTTP_HOST'] == 'makeadiff.in') $madapp_db = 'makeadiff_madapp';
+$madapp_db = 'makeadiff_madapp';
 
 // Argument Parsing.
 $city_id 		= i($QUERY,'city_id', 0);
@@ -11,7 +10,7 @@ $donation_status= i($QUERY,'donation_status', 'any');
 $donation_type 	= i($QUERY,'donation_type', 'any');
 $group_type 	= i($QUERY,'group_type', 'any');
 $vertical_id	= i($QUERY,'vertical_id', '0');
-$format 		= i($QUERY, 'format', 'html');
+$format 		= i($QUERY,'format', 'html');
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -71,10 +70,11 @@ $external = array();
 $donut = array();
 
 if($donation_type != 'donut') {
-	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email,
+	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city,
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
+		INNER JOIN cities C ON U.city_id=C.id
 		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donor_id
 		$all_madapp_joins
@@ -82,10 +82,11 @@ if($donation_type != 'donut') {
 	// dump($sql->_query);
 }
 if($donation_type == 'donut' or $donation_type == 'any') {
-	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, 
+	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city,
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
+		INNER JOIN cities C ON U.city_id=C.id
 		LEFT JOIN reports_tos R ON U.id=R.user_id
 		INNER JOIN donours DON ON DON.id=D.donour_id
 		$all_madapp_joins
@@ -96,45 +97,54 @@ $all_donations = array_merge($external, $donut);
 
 $total_amount = 0;
 $total_deposited = 0;
+$total_external = 0;
 $total_late = 0;
 $total_late_1_weeks = 0;
 $total_late_2_weeks = 0;
 $total_late_3_weeks = 0;
 $total_late_4_or_more_weeks = 0;
 foreach ($all_donations as $i => $don) {
+	$all_donations[$i]['amount_raised'] = 0;
 	$all_donations[$i]['amount_deposited'] = 0;
+	$all_donations[$i]['amount_external'] = 0;
 	$all_donations[$i]['amount_late_1_weeks'] = 0;
 	$all_donations[$i]['amount_late_2_weeks'] = 0;
 	$all_donations[$i]['amount_late_3_weeks'] = 0;
 	$all_donations[$i]['amount_late_4_or_more_weeks'] = 0;
 	
-	// Deposited donations.
-	if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING') { // or $don['donation_type'] != 'donut'
-		$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
-		$total_deposited += $don['donation_amount'];
-	
-	// Undeposited donations
-	} else {
-		$datetime1 = new DateTime($don['created_at']);
-		$datetime2 = new DateTime(date("Y-m-d H:i:s"));
-		$interval = $datetime1->diff($datetime2);
+	if($don['source'] == 'donut') {
+		// Deposited donations.
+		if($don['donation_status'] == 'DEPOSIT COMPLETE' or $don['donation_status'] == 'RECEIPT SENT' or $don['donation_status'] == 'DEPOSIT_PENDING') { 
+			$all_donations[$i]['amount_deposited'] = $don['donation_amount'];
+			$total_deposited += $don['donation_amount'];
+		
+		// Undeposited donations
+		} else {
+			$datetime1 = new DateTime($don['created_at']);
+			$datetime2 = new DateTime(date("Y-m-d H:i:s"));
+			$interval = $datetime1->diff($datetime2);
 
-		if($interval->format("%a") > 28) {
-			$all_donations[$i]['amount_late_4_or_more_weeks'] = $don['donation_amount'];
-			$total_late_4_or_more_weeks += $don['donation_amount'];
-		} else if($interval->format("%a") > 21) {
-			$all_donations[$i]['amount_late_3_weeks'] = $don['donation_amount'];
-			$total_late_3_weeks += $don['donation_amount'];
-		} else if($interval->format("%a") > 14) {
-			$all_donations[$i]['amount_late_2_weeks'] = $don['donation_amount'];
-			$total_late_2_weeks += $don['donation_amount'];
-		} else if($interval->format("%a") > 7) {
-			$all_donations[$i]['amount_late_1_weeks'] = $don['donation_amount'];
-			$total_late_1_weeks += $don['donation_amount'];
+			if($interval->format("%a") > 28) {
+				$all_donations[$i]['amount_late_4_or_more_weeks'] = $don['donation_amount'];
+				$total_late_4_or_more_weeks += $don['donation_amount'];
+			} else if($interval->format("%a") > 21) {
+				$all_donations[$i]['amount_late_3_weeks'] = $don['donation_amount'];
+				$total_late_3_weeks += $don['donation_amount'];
+			} else if($interval->format("%a") > 14) {
+				$all_donations[$i]['amount_late_2_weeks'] = $don['donation_amount'];
+				$total_late_2_weeks += $don['donation_amount'];
+			} else if($interval->format("%a") > 7) {
+				$all_donations[$i]['amount_late_1_weeks'] = $don['donation_amount'];
+				$total_late_1_weeks += $don['donation_amount'];
+			}
+			$total_late += $don['donation_amount'];
 		}
-		$total_late += $don['donation_amount'];
+	} else {
+		$total_external += $don['donation_amount'];
+		$all_donations[$i]['amount_external'] = $don['donation_amount'];
 	}
 
+	$all_donations[$i]['amount_raised'] = $don['donation_amount'];
 	$total_amount += $don['donation_amount'];
 }
 
