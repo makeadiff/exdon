@@ -32,7 +32,7 @@ var coaches = <?php echo json_encode($coaches); ?>;
 </script>
 
 <table class="table table-striped">
-<tr><th>Type</th><th>Donuted Amount</th><th>Deposited + External</th>
+<tr><th>Type</th><th>Donuted Amount</th><th>Deposited/External</th>
 	<th>1 Week Late</th><th>2 Week Late</th><th>3 Week Late</th><th>4+ Week Late</th>
 	<th>Donor</th><th>Fundraiser</th><th>City</th><th>Donuted On</th><th>Status</th></tr>
 <tr>
@@ -53,7 +53,10 @@ var coaches = <?php echo json_encode($coaches); ?>;
 <tr>
 	<td><?php echo i($all_donation_types, $don['donation_type'], $don['donation_type']) ?></td>
 	<td title="<?php echo $don['id'] ?>"><?php echo money_format("%.0n", $don['amount_raised']) ?></td>
-	<td><?php echo money_format("%.0n", $don['amount_deposited']) .' + '. money_format("%.0n", $don['amount_external']) ?></td>
+	<td><?php 
+		if($don['amount_deposited']) echo money_format("%.0n", $don['amount_deposited']);
+		else if($don['amount_external']) echo money_format("%.0n", $don['amount_external']);
+		else echo money_format("%.0n", 0); ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_1_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_2_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_3_weeks']) ?></td>
@@ -62,7 +65,8 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td><?php echo $don['fundraiser_name'] ?></td>
 	<td><?php echo $don['fundraiser_city'] ?></td>
 	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
-	<td><?php echo $all_donation_status[$don['donation_status']] ?></td>
+	<td><?php 	if($don['donation_type'] == 'donut') echo $all_donation_status[$don['donation_status']];
+				else echo "Collected"; ?></td>
 </tr>
 <?php } ?>
 </table>
