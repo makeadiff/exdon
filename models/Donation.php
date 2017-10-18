@@ -256,6 +256,7 @@ class Donation extends DBTable {
 			WHERE " . implode($sql_checks, ' AND ') . "
 			GROUP BY D.id
 			ORDER BY D.created_at DESC");
+			// print $sql->_query;
 
 			$donations = array_merge($donations, $external_donations);
 		}

@@ -37,6 +37,7 @@ $api->post('/donation/validate', function() {
 });
 
 // /donation/by_fundraiser/{fundraiser_id}
+// /user/{fundraiser_id}/donations
 $api->get('/donation/get_donations_by_user/{fundraiser_id}', function ($fundraiser_id) {
 	$donation = new Donation;
 	$my_donations = $donation->getDonationsByUser($fundraiser_id);

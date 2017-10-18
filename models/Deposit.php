@@ -2,6 +2,7 @@
 class Deposit extends DBTable {
 	public $error = '';
 	private $sql;
+	private $national_account_user_id = 13257; // Pooja's User ID in Donut
 
 	function __construct() {
 		global $sql;
@@ -10,7 +11,6 @@ class Deposit extends DBTable {
 	}
 
 	function add($collected_from_user_id, $given_to_user_id, $donation_ids) {
-		
 		// Validations...
 		if(!$collected_from_user_id or !$this->sql->getOne("SELECT id FROM users WHERE id=$collected_from_user_id AND is_deleted='0'")) 
 			return $this->_error("Invalid User ID of depositer.");
@@ -43,6 +43,17 @@ class Deposit extends DBTable {
 		$this->field['status'] = 'pending';
 		$this->field['amount'] = $amount;
 		$deposit_id = $this->save();
+
+		// Deposits made to the national account should have the status 'DEPOSIT_PENDING'. Once someone approves it, it goes to 'RECIPT SENT'. 
+		if($given_to_user_id == $this->national_account_user_id) {
+			foreach ($donation_ids as $donation_id) {	
+				$this->sql->update("donations", array(
+						'donation_status'	=> 'DEPOSIT_PENDING',
+						'updated_by'		=> $collected_from_user_id,
+						'updated_at'		=> 'NOW()'
+					), "id=$donation_id");
+			}
+		}
 
 		foreach ($donation_ids as $donation_id) {
 			$this->sql->insert("deposits_donations", array(
