@@ -156,7 +156,7 @@ class Donation extends DBTable {
 
 	/// Get all the donations donuted by the given user
 	function getDonationsByUser($user_id) {
-		return $this->search(array('fundraiser_id' => $user_id, 'include_external_donations' => true));
+		return $this->search(array('fundraiser_id' => $user_id, 'include_external_donations' => true, 'include_deposit_info' => true));
 	}
 
 	/**
@@ -226,12 +226,17 @@ class Donation extends DBTable {
 			$person_id = i($params, 'fundraiser_id');
 			if(!$person_id) $person_id = i($params, 'updated_by');
 			foreach ($donations as $donation_id => $donation_info) {
-				$deposit_info = $sql->getAssoc("SELECT DP.* FROM deposits DP 
+				$all_deposit_info = $sql->getAll("SELECT DP.*,TRIM(CONCAT(GU.first_name,' ',GU.last_name)) AS given_to_user_name,
+							TRIM(CONCAT(CU.first_name,' ',CU.last_name)) AS collected_from_user_name FROM deposits DP 
 						INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
-						WHERE DD.donation_id=$donation_id AND DP.collected_from_user_id=$person_id AND DP.status IN ('approved', 'pending')");
+						INNER JOIN users GU ON GU.id=DP.given_to_user_id
+						INNER JOIN users CU ON CU.id=DP.collected_from_user_id
+						WHERE DD.donation_id=$donation_id AND DP.collected_from_user_id=$person_id AND DP.status IN ('approved', 'pending')
+						ORDER BY DP.added_on DESC");
+				$deposit_info = reset($all_deposit_info);
 
 				if(isset($params['include_deposit_info']) and $params['include_deposit_info']) {
-					$donations[$donation_id]['deposit'] = $deposit_info;
+					$donations[$donation_id]['deposit'] = $all_deposit_info;
 				}
 
 				if(isset($params['deposited'])) {
