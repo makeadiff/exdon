@@ -110,12 +110,23 @@ $api->get('/donation/approved_from_fundraiser/{fundraiser_id}', function ($fundr
 	}
 });
 
-// $api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
-// 	$donation = new Donation;
-// 	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
-// 		showSuccess("Donation deleted", array('donation_id' => $donation_id));
-// 	} else showError($donation->error);
-// });
+$api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
+	$donation = new Donation;
+	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
+		showSuccess("Donation deleted", array('donation_id' => $donation_id));
+	} else showError($donation->error);
+});
+
+$api->request('/donation/search_undeposited', function () {
+	global $QUERY;
+
+	$donation = new Donation;
+	$donations = $donation->search($QUERY + array(
+		'deposited' => false, 
+		'status_in' => array("TO_BE_APPROVED_BY_POC", 'HAND_OVER_TO_FC_PENDING')
+	));
+	showSuccess("Results", array('donations' => $donations));
+});
 
 /// Get all donations donuted by this user but hasn't been deposited yet
 $api->request('/donation/undeposited/{fundraiser_id}', function ($fundraiser_id) {

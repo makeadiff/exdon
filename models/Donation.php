@@ -2,7 +2,7 @@
 class Donation extends DBTable {
 	public $error;
 	public $start_date = '2016-10-01';
-	public $current_mode = 'testing';
+	public $current_mode = 'live';
 
 	private $status_order = array('TO_BE_APPROVED_BY_POC', 'HAND_OVER_TO_FC_PENDING', 'DEPOSIT_PENDING', 'DEPOSIT COMPLETE');
 
@@ -69,9 +69,7 @@ class Donation extends DBTable {
 			$sms->message = "Dear $donor_name, Thanks a lot for your contribution of Rs. $amount towards Make a Difference. This is only an acknowledgement. A confirmation and e-receipt would be sent once the amount reaches us.";
 			$sms->number = $donor_phone;
 			$sms->send();
-		}
 
-		if($this->current_mode != 'testing') {
 			//Send acknowledgement Email
 			$base_url = '../';
 			$images[] = $base_url . 'assets/mad-letterhead-left.png';
@@ -175,14 +173,29 @@ class Donation extends DBTable {
 		$sql_checks = array();
 		$sql_joins = array();
 
-		if(isset($params['amount'])) $sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
-		if(isset($params['donor_id'])) $sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
-		if(isset($params['status'])) $sql_checks['status'] = "D.donation_status = '" . $params['status'] . "'";
-		if(isset($params['status_in'])) $sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
-		if(isset($params['fundraiser_id'])) $sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
-		if(isset($params['fundraiser_ids'])) $sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
-		if(isset($params['updated_by'])) $sql_checks['updated_by'] = "D.updated_by = " . $params['updated_by'];
-		if(isset($params['reviewer_id'])) {
+		if(isset($params['amount']) and $params['amount'])
+			$sql_checks['donation_amount'] = "D.donation_amount = " . $params['amount'];
+		if(isset($params['city_id']) and $params['city_id'])
+			$sql_checks['city_id'] = "U.city_id = " . $params['city_id'];
+		if(isset($params['donor_id']) and $params['donor_id'])
+			$sql_checks['donor_id'] = "DON.id = " . $params['donor_id'];
+		if(isset($params['donor_name']) and $params['donor_name']) 
+			$sql_checks['donor_name'] = "DON.first_name LIKE '" . $params['donor_name'] . "%'";
+		if(isset($params['status']) and $params['status'])
+			$sql_checks['status'] = "D.donation_status = '" . $params['status'] . "'";
+		if(isset($params['status_in']) and $params['status_in'])
+			$sql_checks['status_in'] = "D.donation_status IN ('" . implode("','",$params['status_in']) . "')";
+		if(isset($params['fundraiser_name']) and $params['fundraiser_name']) 
+			$sql_checks['fundraiser_name'] = "U.first_name LIKE '" . $params['fundraiser_name'] . "%'";
+		if(isset($params['fundraiser_id']) and $params['fundraiser_id'])
+			$sql_checks['fundraiser_id'] = "D.fundraiser_id = " . $params['fundraiser_id'];
+		if(isset($params['fundraiser_ids']) and $params['fundraiser_ids'])
+			$sql_checks['fundraiser_ids'] = "D.fundraiser_id IN (" . implode($params['fundraiser_ids'], ',') . ')';
+		if(isset($params['not_fundraiser_id']) and $params['not_fundraiser_id'])
+			$sql_checks['fundraiser_id'] = "D.fundraiser_id != " . $params['not_fundraiser_id'];
+		if(isset($params['updated_by']) and $params['updated_by'])
+			$sql_checks['updated_by'] = "D.updated_by = " . $params['updated_by'];
+		if(isset($params['reviewer_id']) and $params['reviewer_id']) {
 			$sql_joins['deposits_donations'] = 'INNER JOIN deposits_donations DD ON DD.donation_id=D.id INNER JOIN deposits DP ON DP.id=DD.deposit_id';
 			$sql_checks['reviewer_id'] = "DP.given_to_user_id={$params['reviewer_id']}";
 			if(!isset($sql_checks['deposit_status'])) $sql_checks['deposit_status'] = "DP.status='pending'";
@@ -225,26 +238,28 @@ class Donation extends DBTable {
 		if(isset($params['deposited']) or (isset($params['include_deposit_info']) and $params['include_deposit_info'])) {
 			$person_id = i($params, 'fundraiser_id');
 			if(!$person_id) $person_id = i($params, 'updated_by');
-			foreach ($donations as $donation_id => $donation_info) {
-				$all_deposit_info = $sql->getAll("SELECT DP.*,TRIM(CONCAT(GU.first_name,' ',GU.last_name)) AS given_to_user_name,
-							TRIM(CONCAT(CU.first_name,' ',CU.last_name)) AS collected_from_user_name FROM deposits DP 
-						INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
-						INNER JOIN users GU ON GU.id=DP.given_to_user_id
-						INNER JOIN users CU ON CU.id=DP.collected_from_user_id
-						WHERE DD.donation_id=$donation_id AND DP.collected_from_user_id=$person_id AND DP.status IN ('approved', 'pending')
-						ORDER BY DP.added_on DESC");
-				$deposit_info = reset($all_deposit_info);
+			if($person_id) {
+				foreach ($donations as $donation_id => $donation_info) {
+					$all_deposit_info = $sql->getAll("SELECT DP.*,TRIM(CONCAT(GU.first_name,' ',GU.last_name)) AS given_to_user_name,
+								TRIM(CONCAT(CU.first_name,' ',CU.last_name)) AS collected_from_user_name FROM deposits DP 
+							INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
+							INNER JOIN users GU ON GU.id=DP.given_to_user_id
+							INNER JOIN users CU ON CU.id=DP.collected_from_user_id
+							WHERE DD.donation_id=$donation_id AND DP.collected_from_user_id=$person_id AND DP.status IN ('approved', 'pending')
+							ORDER BY DP.added_on DESC");
+					$deposit_info = reset($all_deposit_info);
 
-				if(isset($params['include_deposit_info']) and $params['include_deposit_info']) {
-					$donations[$donation_id]['deposit'] = $all_deposit_info;
-				}
+					if(isset($params['include_deposit_info']) and $params['include_deposit_info']) {
+						$donations[$donation_id]['deposit'] = $all_deposit_info;
+					}
 
-				if(isset($params['deposited'])) {
-					// Find donations which had are in the deposits table with status of pending or approved
-					if(!$deposit_info and $params['deposited'])  unset($donations[$donation_id]); // Deposit info not present - undeposited.
-					if($deposit_info and ($deposit_info['status'] == 'approved' or $deposit_info['status'] == 'pending')) {// Approved or pending deposit
-						if($params['deposited'] == false) unset($donations[$donation_id]); // If they want only undeposited donations, unset
-					} else if($params['deposited'] == true) unset($donations[$donation_id]); // Only deposited donations go thru.
+					if(isset($params['deposited'])) {
+						// Find donations which had are in the deposits table with status of pending or approved
+						if(!$deposit_info and $params['deposited'])  unset($donations[$donation_id]); // Deposit info not present - undeposited.
+						if($deposit_info and ($deposit_info['status'] == 'approved' or $deposit_info['status'] == 'pending')) {// Approved or pending deposit
+							if($params['deposited'] == false) unset($donations[$donation_id]); // If they want only undeposited donations, unset
+						} else if($params['deposited'] == true) unset($donations[$donation_id]); // Only deposited donations go thru.
+					}
 				}
 			}
 		}
@@ -332,7 +347,11 @@ class Donation extends DBTable {
 	function remove($donation_id, $deleter_id, $fc_poc = 'poc') {
 		global $sql;
 
-		$donations_for_deletion = $this->search(array($fc_poc . '_id' => $deleter_id));
+		if($fc_poc == 'self') {
+			$donations_for_deletion = $this->search(array('fundraiser_id' => $deleter_id));
+		} else {
+			$donations_for_deletion = $this->search(array($fc_poc . '_id' => $deleter_id));
+		}
 		if(!count($donations_for_deletion) or !$donations_for_deletion) return $this->_error("Can't find any donations that can be deleted by '$deleter_id'");
 
 		$donation_ids_for_deletion = array_keys($donations_for_deletion); 

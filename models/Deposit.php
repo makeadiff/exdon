@@ -108,10 +108,10 @@ class Deposit extends DBTable {
 		// Change the status of each donation in this deposit.
 		$donation = new Donation();
 		foreach($deposit['donations'] as $don) {
-			if($don['donation_status'] == 'TO_BE_APPROVED_BY_POC' and !empty($roles[$user->role_ids['CFR POC']])) {
+			if(!empty($roles[$user->role_ids['CFR POC']])) { // $don['donation_status'] == 'TO_BE_APPROVED_BY_POC' and 
 				$donation->pocApprove($don['id'], $current_user_id); // Approved by POC/Coach.
 
-			} elseif($don['donation_status'] == 'HAND_OVER_TO_FC_PENDING' and !empty($roles[$user->role_ids['FC']])) {
+			} elseif(!empty($roles[$user->role_ids['FC']])) { // $don['donation_status'] == 'HAND_OVER_TO_FC_PENDING' and 
 				$donation->fcApprove($don['id'], $current_user_id); // Approved by FC
 			}
 		}
