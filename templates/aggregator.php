@@ -34,7 +34,8 @@ var coaches = <?php echo json_encode($coaches); ?>;
 <table class="table table-striped">
 <tr><th>Type</th><th>Donuted Amount</th><th>Deposited/External</th>
 	<th>1 Week Late</th><th>2 Week Late</th><th>3 Week Late</th><th>4+ Week Late</th>
-	<th>Donor</th><th>Fundraiser</th><th>City</th><th>Donuted On</th><th>Status</th></tr>
+	<th>Donor</th><th>Fundraiser</th><th>City</th><th>Donuted On</th><th>Status</th>
+	<?php if($admin) { ?><th>ID</th><th>Action</th><?php } ?></tr>
 <tr>
 	<td><strong>Total</strong></td>
 	<td><?php echo money_format("%.0n", $total_amount) ?></td>
@@ -48,6 +49,7 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
+	<?php if($admin) { ?><td>&nbsp;</td><td>&nbsp;</td><?php } ?>
 </tr>
 <?php foreach ($all_donations as $don) { ?>
 <tr>
@@ -67,6 +69,10 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
 	<td><?php 	if($don['donation_type'] == 'donut') echo $all_donation_status[$don['donation_status']];
 				else echo "Collected"; ?></td>
+	<?php if($admin) { ?>
+	<td><?php echo $don['id'] ?></td>
+	<td><?php if($don['source'] == 'donut') { ?><a class="ajaxify icon delete" href="api/donation/<?php echo $don['id'] ?>/delete/<?php echo $don['fundraiser_id'] ?>/self">Delete</a><?php } ?></td>
+	<?php } ?>
 </tr>
 <?php } ?>
 </table>

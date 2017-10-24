@@ -11,6 +11,7 @@ $donation_type 	= i($QUERY,'donation_type', 'any');
 $group_type 	= i($QUERY,'group_type', 'any');
 $vertical_id	= i($QUERY,'vertical_id', '0');
 $format 		= i($QUERY,'format', 'html');
+$admin 			= i($QUERY,'admin', 0);
 
 // Build SQL with given Argument
 $checks = array('1'	=> '1');
@@ -70,7 +71,7 @@ $external = array();
 $donut = array();
 
 if($donation_type != 'donut') {
-	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city,
+	$external = $sql->getAll("SELECT DISTINCT D.id,amount AS donation_amount, donation_type, DON.first_name AS donor_name, TRIM(CONCAT(U.first_name,' ', U.last_name)) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city, fundraiser_id,
 			donation_status, D.created_at,'external' AS source 
 		FROM external_donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
@@ -82,7 +83,7 @@ if($donation_type != 'donut') {
 	// dump($sql->_query);
 }
 if($donation_type == 'donut' or $donation_type == 'any') {
-	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city,
+	$donut = $sql->getAll("SELECT  DISTINCT D.id,donation_amount, 'donut' AS donation_type, DON.first_name AS donor_name, CONCAT(U.first_name,' ', U.last_name) AS fundraiser_name, U.phone_no AS fundraiser_phone, U.email AS fundraiser_email, C.name AS fundraiser_city, fundraiser_id,
 			donation_status,  D.created_at, 'donut' AS source 
 		FROM donations D
 		INNER JOIN users U ON U.id=D.fundraiser_id
