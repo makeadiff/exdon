@@ -112,9 +112,16 @@ $api->get('/donation/approved_from_fundraiser/{fundraiser_id}', function ($fundr
 
 $api->get('/donation/{donation_id}/delete/{poc_id}/{fc_poc}', function ($donation_id, $poc_id, $fc_poc) {
 	$donation = new Donation;
-	if($donation->remove($donation_id, $poc_id, $fc_poc)) {
-		showSuccess("Donation deleted", array('donation_id' => $donation_id));
-	} else showError($donation->error);
+	if(is_numeric($donation_id)) {
+		if($donation->remove($donation_id, $poc_id, $fc_poc)) {
+			showSuccess("Donation deleted", array('donation_id' => $donation_id));
+		} else showError($donation->error);
+	} elseif (preg_match('/^Ex\:/', $donation_id)) {
+		$donation_id_actual = preg_replace('/^Ex\:/', '', $donation_id);
+		if($donation->removeExternal($donation_id_actual, $poc_id)) {
+			showSuccess("Donation deleted", array('donation_id' => $donation_id));
+		} else showError($donation->error);
+	}
 });
 
 $api->request('/donation/search_undeposited', function () {

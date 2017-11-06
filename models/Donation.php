@@ -343,6 +343,20 @@ class Donation extends DBTable {
 		return true;
 	}
 
+	/// Delete the external donation of which id is given.
+	function removeExternal($donation_id, $deleter_id, $fc_poc = 'poc') {
+		global $sql;
+
+		$donations_for_deletion = $this->search(array('fundraiser_id' => $deleter_id, 'include_external_donations' => true));
+		if(!count($donations_for_deletion) or !$donations_for_deletion) return $this->_error("Can't find any donations that can be deleted by '$deleter_id'");
+
+		$donation_ids_for_deletion = array_keys($donations_for_deletion); 
+
+		if(!in_array('Ex:'.$donation_id, $donation_ids_for_deletion)) return $this->_error("User $deleter_id can't delete the donation $donation_id");
+
+		return $sql->execQuery("DELETE FROM external_donations WHERE id=$donation_id"); // Delete the donation.
+	}
+
 	/// Delete the donation of which id is given.
 	function remove($donation_id, $deleter_id, $fc_poc = 'poc') {
 		global $sql;
