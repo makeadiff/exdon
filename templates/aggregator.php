@@ -30,6 +30,7 @@ $html->buildInput("action", '&nbsp;', 'submit', 'Filter', array('class' => 'btn 
 <script type="text/javascript">
 var coaches = <?php echo json_encode($coaches); ?>;
 </script>
+<a href="<?php echo getLink('aggregator.php', array('format' => 'csv', 'action' => 'Filter'), true); ?>">Download CSV</a><br />
 
 <table class="table table-striped">
 <tr><th>Type</th><th>Donuted Amount</th><th>Deposited/External</th>
