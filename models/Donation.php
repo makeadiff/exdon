@@ -321,7 +321,7 @@ class Donation extends DBTable {
 
 	/// Approve the given donation using the FC account.
 	function fcApprove($donation_id, $approver_id) {
-		$donations_for_approval = $this->search(array('fc_id' => $approver_id, 'status' => 'HAND_OVER_TO_FC_PENDING'));
+		$donations_for_approval = $this->search(array('fc_id' => $approver_id, 'status_in' => array('HAND_OVER_TO_FC_PENDING', 'TO_BE_APPROVED_BY_POC')));
 		if(!count($donations_for_approval)) return $this->_error("Can't find any donations that can be approved by current user($approver_id)");
 		$donation_ids_for_approval = array_keys($donations_for_approval);
 
