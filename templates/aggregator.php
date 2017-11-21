@@ -35,7 +35,7 @@ var coaches = <?php echo json_encode($coaches); ?>;
 <table class="table table-striped">
 <tr><th>Type</th><th>Donuted Amount</th><th>Deposited/External</th>
 	<th>1 Week Late</th><th>2 Week Late</th><th>3 Week Late</th><th>4+ Week Late</th>
-	<th>Donor</th><th>Fundraiser</th><th>City</th><th>Donuted On</th><th>Status</th>
+	<th>Donor</th><th>Donor Email</th><th>Fundraiser</th><th>City</th><th>Donuted On</th><th>Status</th>
 	<?php if($admin) { ?><th>ID</th><th>Action</th><?php } ?></tr>
 <tr>
 	<td><strong>Total</strong></td>
@@ -65,6 +65,7 @@ var coaches = <?php echo json_encode($coaches); ?>;
 	<td><?php echo money_format("%.0n", $don['amount_late_3_weeks']) ?></td>
 	<td><?php echo money_format("%.0n", $don['amount_late_4_or_more_weeks']) ?></td>
 	<td><?php echo $don['donor_name'] ?></td>
+	<td><?php echo $don['donor_email'] ?></td>
 	<td><?php echo $don['fundraiser_name'] ?></td>
 	<td><?php echo $don['fundraiser_city'] ?></td>
 	<td><?php echo date($config['date_format_php'], strtotime($don['created_at'])); ?></td>
