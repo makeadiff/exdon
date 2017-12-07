@@ -1,5 +1,6 @@
 <?php 
-header("Content-type: text/plain; charset=utf-8");
+header("Content-type: text/csv; charset=utf-8");
+header('Content-Disposition: attachment; filename="Donations.csv"');
 // header('Content-Disposition: attachment; filename="Aggregate.csv"');
 ?>Type,Donuted Amount,Deposited/External,1 Week Late,2 Week Late,3 Week Late,4+ Week Late,Donor,Donor Email,Fundraiser,Email,Phone,City,Donuted On,Status
 Total,<?php echo money_format("%.0n", $total_amount) ?>,<?php echo money_format("%.0n", $total_deposited) . ' + ' . money_format("%.0n", $total_external) ?>,<?php echo money_format("%.0n", $total_late_1_weeks) ?>,<?php echo money_format("%.0n", $total_late_2_weeks) ?>,<?php echo money_format("%.0n", $total_late_3_weeks) ?>,<?php echo money_format("%.0n", $total_late_4_or_more_weeks) ?>,,,,,,
