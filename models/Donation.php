@@ -233,6 +233,7 @@ class Donation extends DBTable {
 			GROUP BY D.id
 			ORDER BY D.created_at DESC");
 		// print $sql->_query . "\n";
+		// dump($donations);
 
 		// Find only deposited or undeposited donations - also used to include deposit info.
 		if(isset($params['deposited']) or (isset($params['include_deposit_info']) and $params['include_deposit_info'])) {
@@ -240,6 +241,7 @@ class Donation extends DBTable {
 			if(!$person_id) $person_id = i($params, 'updated_by');
 			if($person_id) {
 				foreach ($donations as $donation_id => $donation_info) {
+					// Find all donations deposited by the current user which is still in pending or approved.
 					$all_deposit_info = $sql->getAll("SELECT DP.*,TRIM(CONCAT(GU.first_name,' ',GU.last_name)) AS given_to_user_name,
 								TRIM(CONCAT(CU.first_name,' ',CU.last_name)) AS collected_from_user_name FROM deposits DP 
 							INNER JOIN deposits_donations DD ON DD.deposit_id=DP.id 
