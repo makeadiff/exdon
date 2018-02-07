@@ -13,7 +13,7 @@ class API {
 	}
 
 	function post($route, $handler, $public = false) {
-		$this->actions[$route] = array(
+		$this->actions[] = array(
 			'method'	=> 'POST',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -25,7 +25,7 @@ class API {
 	 * Example: $api->get('/user/{user_id}/fetch/{content_name}', function($user_id, $content_name) { dump($user_id, $content_name); });
 	 */
 	function get($route, $handler, $public = false) {
-		$this->actions[$route] = array(
+		$this->actions[] = array(
 			'method'	=> 'GET',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -33,11 +33,32 @@ class API {
 		);
 	}
 
+	/** Handle a Delete request.
+	 * Example: $api->delete('/user/{user_id}', function($user_id) { dump($user_id); });
+	 */
+	function delete($route, $handler, $public = false) {
+		$this->actions[] = array(
+			'method'	=> 'DELETE',
+			'route'		=> $route,
+			'handler'	=> $handler,
+			'public'	=> $public,
+		);
+	}
+
+	function call($verb, $route, $handler, $public = false) {
+		$this->actions[] = array(
+			'method'	=> $verb,
+			'route'		=> $route,
+			'handler'	=> $handler,
+			'public'	=> $public
+		);
+	}
+
 	/** Handle a request.
 	 * Example: $api->any('/user/login', function() { print "Yo!"; });
 	 */
 	function request($route, $handler, $public = false) {
-		$this->actions[$route] = array(
+		$this->actions[] = array(
 			'method'	=> '',
 			'route'		=> $route,
 			'handler'	=> $handler,
@@ -60,7 +81,8 @@ class API {
 
 		$route_found = false;
 
-		foreach ($this->actions as $route => $act) {
+		foreach ($this->actions as $index => $act) {
+			$route = $act['route'];
 			if($act['method'] and $act['method'] != $method) continue;
 			$vars = $this->_match_route($act['route']);
 			if($vars === false) continue;

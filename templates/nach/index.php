@@ -10,7 +10,7 @@ $html->buildInput("action", "&nbsp;", 'submit', "Filter", ['class' => 'btn btn-s
 ?>
 </form><br />
 
-<a href="http://makeadiff.in/apps/csvgo/index.php?name=approved_nach" class="with-icon done">CSV of Approved NACHs</a>
+<a href="http://makeadiff.in/apps/csvgo/index.php?name=all_nach" class="with-icon done">CSV of Approved NACHs</a>
 
 <table class="table table-stripped">
 <tr><th>ID</th><th>Donor</th><th>Donor Phone</th><th>Donor Email</th><th>Fundraiser</th><th>City</th><th>Created At</th><th>Status</th><th>Amount</th><th>Action</th></tr>
