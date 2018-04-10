@@ -1,6 +1,4 @@
 <?php
-
-
 class SMS
 {
     public $message = "";
@@ -16,24 +14,19 @@ class SMS
             'mask'		=>	'MAD',
             'userid'	=>	$gupshup_account['username'],
             'password'	=>	$gupshup_account['password'],
-            'msg'=>$this->message,
-            'send_to'=>$this->number
-
+            'msg'       =>$this->message,
+            'send_to'   =>$this->number
         );
 
-        $url = str_replace('&amp;', '&', $this->getLink('http://enterprise.smsgupshup.com/GatewayAPI/rest?',
-            $gupshup_param));
-
+        $url = str_replace('&amp;', '&', $this->getLink('http://enterprise.smsgupshup.com/GatewayAPI/rest?', $gupshup_param));
 
         // Comment the line below to disable Messageing
         $data = $this->load($url);
-
 
         return true;
     }
 
     //Function to make the above code work :)
-
     function getLink($url,$params=array(),$use_existing_arguments=false) {
         if(!$params and !$use_existing_arguments) return $url;
         if($use_existing_arguments) $params = $params + $_GET;
